@@ -4,6 +4,7 @@ const {
   GraphQLID,
   GraphQLObjectType,
   GraphQLString,
+  GraphQLBoolean,
   GraphQLInt,
   GraphQLFloat,
   GraphQLList,
@@ -138,6 +139,30 @@ const UserType = new GraphQLObjectType({
   }),
 });
 
+const LogInType = new GraphQLObjectType({
+  name: "LogInType",
+  fields: () => ({
+    user: {
+      type: UserType,
+    },
+    token: {
+      type: GraphQLString,
+    },
+  }),
+});
+
+const NotificationType = new GraphQLObjectType({
+  name: "NotificationType",
+  fields: () => ({
+    ok: {
+      type: GraphQLBoolean,
+    },
+    message: {
+      type: GraphQLString,
+    },
+  }),
+});
+
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
@@ -178,6 +203,46 @@ const RootQuery = new GraphQLObjectType({
       type: GraphQLList(CategoryType),
       resolve(parent, args) {
         return Category.find({});
+      },
+    },
+    login: {
+      type: LogInType,
+      args: {
+        email: { type: GraphQLNonNull(GraphQLString) },
+        password: { type: GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const { email, password } = args;
+
+        const foundUser = await User.findOne({ email });
+
+        if (foundUser) {
+          const arePaswordsTheSame = await bcrypt.compare(
+            password,
+            foundUser.password
+          );
+
+          if (arePaswordsTheSame) {
+            delete foundUser.password;
+
+            const token = jwt.sign(
+              {
+                user: foundUser,
+              },
+              process.env.SECRET_KEY,
+              {
+                expiresIn: "365d",
+              }
+            );
+
+            return {
+              user: foundUser,
+              token,
+            };
+          }
+        } else {
+          throw new Error("Usuario o password incorrectos");
+        }
       },
     },
   },
@@ -236,13 +301,55 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLNonNull(GraphQLString) },
         price: { type: GraphQLNonNull(GraphQLFloat) },
         quantity: { type: GraphQLNonNull(GraphQLInt) },
-        status: { type: GraphQLNonNull(GraphQLString) },
+        status: { type: GraphQLString },
         description: { type: GraphQLNonNull(GraphQLString) },
-        images: { type: GraphQLNonNull(GraphQLList(GraphQLString)) },
         seller: { type: GraphQLNonNull(GraphQLID) },
         category: { type: GraphQLNonNull(GraphQLID) },
       },
-      resolve(parent, args) {},
+      async resolve(parent, args) {
+        const product = new Product({
+          name: args.name,
+          price: args.price,
+          quantity: args.quantity,
+          description: args.description,
+          seller: args.seller,
+          category: args.category,
+        });
+
+        await Category.update(
+          { _id: args.category },
+          { $push: { products: product._id } }
+        );
+
+        return product.save();
+      },
+    },
+    removeUser: {
+      type: UserType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return User.findByIdAndRemove(args.id);
+      },
+    },
+    removeCategory: {
+      type: NotificationType,
+      args: { id: { type: GraphQLID } },
+      async resolve(parent, args) {
+        await Category.deleteOne({ _id: args.id });
+        await Product.deleteMany({ category: args.id });
+
+        return {
+          ok: true,
+          message: "Categoria borrada",
+        };
+      },
+    },
+    removeProduct: {
+      type: ProductType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return Product.findByIdAndRemove(args.id);
+      },
     },
   },
 });

@@ -32,6 +32,10 @@ const userSchema = new Schema({
     required: [true, "El campo email es obligatorio"],
     unique: true,
   },
+  profilePhoto: {
+    type: String,
+    default: "placeholder.png",
+  },
   password: {
     type: String,
     required: [true, "El campo password es obligatorio"],

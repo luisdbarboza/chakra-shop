@@ -38,8 +38,24 @@ const checkFileValidation = (req, res, acceptedTypes) => {
   return true;
 };
 
+const validateUser = (token) => {
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({
+        ok: false,
+        err: {
+          message: "Token no valido",
+        },
+      });
+    }
+
+    return decoded;
+  });
+};
+
 module.exports = {
   respondWithErrorMessage,
   deleteFile,
   checkFileValidation,
+  validateUser,
 };

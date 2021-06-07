@@ -18,6 +18,8 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 
+app.use(require("./routes/index"));
+
 //conexion a la base de datos
 mongoose
   .connect(process.env.MONGO_URI, {
