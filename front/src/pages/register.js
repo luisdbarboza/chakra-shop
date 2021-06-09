@@ -6,11 +6,11 @@ import {
   Box,
   Input,
   Button,
-  Link,
   FormControl,
   FormLabel,
   FormErrorMessage,
 } from "@chakra-ui/react";
+import Link from "next/link";
 import Head from "next/head";
 import Layout from "../layouts/Layout";
 

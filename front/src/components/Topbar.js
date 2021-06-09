@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import Link from "next/link";
 import {
   Box,
@@ -46,12 +46,20 @@ const SearchButton = () => {
 };
 
 const SearchBar = () => {
+  const [search, setSearch] = useState("");
+  const handleChange = (event) => setSearch(event.target.value);
+
   return (
     <Center>
       <HStack>
         <InputGroup>
-          <Input bg="white" />
-          <Link href="/search/termino">
+          <Input
+            color="black"
+            bg="white"
+            value={search}
+            onChange={handleChange}
+          />
+          <Link href={`/search/${search}`}>
             <a>
               <InputRightElement w="3rem" children={<SearchButton />} />
             </a>
@@ -76,7 +84,7 @@ const UserOptions = () => {
 
 const Topbar = React.memo(() => {
   return (
-    <Box bg="#131921" w="100%" p={4} height="12vh" color="white">
+    <Box bg="#131921" w="100%" p={4} position="fixed" color="white">
       <Flex justify="space-between" wrap="wrap">
         <MenuButtonAndLogo />
         <SearchBar />

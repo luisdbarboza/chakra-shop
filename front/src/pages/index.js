@@ -2,6 +2,8 @@ import { Box, Heading, Text, Image, Grid, GridItem } from "@chakra-ui/react";
 import Head from "next/head";
 import Layout from "../layouts/Layout";
 import ProductCard from "../components/ProductCard";
+import { useQuery } from "@apollo/client";
+import { getAllProducts } from "../graphql/queries";
 
 const HeroSection = () => {
   return (
@@ -10,8 +12,6 @@ const HeroSection = () => {
         <Box m={{ base: "5rem auto auto auto", sm: "auto" }}>
           <Heading
             fontSize={{ base: "6vw", md: "4vw" }}
-            color="white"
-            textShadow="1px 3px blue"
             style={{ textAlign: "center" }}
           >
             Bienvenido a Chakra Shop
@@ -31,6 +31,10 @@ const HeroSection = () => {
 };
 
 const FeaturedProducts = () => {
+  const { data, loading } = useQuery(getAllProducts);
+
+  console.log(data);
+
   return (
     <Box p="1rem">
       <Heading
@@ -42,10 +46,25 @@ const FeaturedProducts = () => {
         Productos destacados
       </Heading>
       <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap="1rem">
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
+        {loading ? (
+          <Heading size="1rem">Cargando</Heading>
+        ) : (
+          <>
+            {data.products.map((product, index) => {
+              return (
+                <ProductCard
+                  key={index}
+                  name={product.name}
+                  price={product.price}
+                  seller={product.seller}
+                  mainImage={product.mainImage}
+                  id={product.id}
+                  reviewsCount={product.reviewsCount}
+                />
+              );
+            })}
+          </>
+        )}
       </Grid>
     </Box>
   );

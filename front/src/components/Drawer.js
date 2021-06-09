@@ -7,10 +7,21 @@ import {
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
+  Heading,
+  Text,
+  Box,
+  IconButton,
+  Flex,
+  Spacer,
 } from "@chakra-ui/react";
+import { useQuery } from "@apollo/client";
+import Link from "next/link";
 import { DrawerContext } from "../containers/NavigationBar";
+import { RiArrowRightSLine } from "react-icons/ri";
+import { getAllCategories } from "../graphql/queries";
 
 const Drawer = React.memo(() => {
+  const { data, loading, error } = useQuery(getAllCategories);
   const { drawerState, dispatchDrawerState } = useContext(DrawerContext);
   const { isOpen } = drawerState;
 
@@ -29,16 +40,42 @@ const Drawer = React.memo(() => {
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Create your account</DrawerHeader>
+          <DrawerHeader>Hola Usuario</DrawerHeader>
 
-          <DrawerBody>{/* <Input placeholder="Type here..." /> */}</DrawerBody>
-
-          {/* <DrawerFooter>
-            <Button variant="outline" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button colorScheme="blue">Save</Button>
-          </DrawerFooter> */}
+          <DrawerBody>
+            {loading ? (
+              <Text>Cargando...</Text>
+            ) : (
+              <>
+                {data.categories.map((category, index) => {
+                  return (
+                    <Box mb="1rem" key={index}>
+                      <Link href={`/categories/${category.id}`}>
+                        <a>
+                          <Flex align="center">
+                            <Box
+                              _hover={{
+                                color: "blue",
+                                textDecoration: "underline",
+                              }}
+                            >
+                              {category.name}
+                            </Box>
+                            <Spacer />
+                            <IconButton
+                              isRound
+                              aria-label={`See all products from ${category.name} category`}
+                              icon={<RiArrowRightSLine />}
+                            />
+                          </Flex>
+                        </a>
+                      </Link>
+                    </Box>
+                  );
+                })}
+              </>
+            )}
+          </DrawerBody>
         </DrawerContent>
       </ChakraUIDrawer>
     </>

@@ -1,0 +1,31 @@
+
+inicia sesion
+{
+  login (email: "lbarbozanav@gmail.com", password:"12345"){
+    user {
+      id
+      name
+      email
+      profilePhoto
+      cart {
+        id
+      }
+    }
+    token
+    status {
+      ok
+      message
+    }
+  }
+}
+
+// buscar un producto con filtros
+{
+	search(filters: "{\"text\":null,\"category\":null,\"priceRange\":null,\"averageRating\":0}") {
+		name
+    price
+    averageRating
+    reviewsCount
+    mainImage
+  }
+}

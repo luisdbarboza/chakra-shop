@@ -4,6 +4,7 @@ import {
   Center,
   Box,
   VStack,
+  HStack,
   Heading,
   Select,
 } from "@chakra-ui/react";
@@ -11,6 +12,31 @@ import Head from "next/head";
 import Link from "next/link";
 import Layout from "../../layouts/Layout";
 import ProductCard from "../../components/ProductCard";
+import { FaStar } from "react-icons/fa";
+
+const StarRatingRow = ({ numberOfStars, checked }) => {
+  const stars = [];
+
+  for (let i = 0; i < numberOfStars; i++) {
+    if (checked > 0) {
+      stars.push(<FaStar color="yellow" />);
+      checked -= 1;
+    } else {
+      stars.push(<FaStar />);
+    }
+  }
+
+  return (
+    <Box>
+      <HStack>
+        {stars.map((star, index) => (
+          <span key={index}>{star}</span>
+        ))}
+        <span>o mas</span>
+      </HStack>
+    </Box>
+  );
+};
 
 function search() {
   return (
@@ -43,7 +69,7 @@ function search() {
         templateColumns={{ base: "100%", md: "20% 80%" }}
         height="88vh"
       >
-        <Grid templateRows="repeat(3, 150px)">
+        <Grid templateRows="repeat(3, 150px)" gap="1rem">
           <Box>
             <Heading as="h3" size="1.2rem">
               Categoria
@@ -81,9 +107,14 @@ function search() {
           </Box>
           <Box>
             <Heading as="h3" size="1.2rem">
-              Valoracion
-              <VStack></VStack>
+              Opinión media de los clientes
             </Heading>
+            <VStack align="left">
+              <StarRatingRow numberOfStars={5} checked={4} />
+              <StarRatingRow numberOfStars={5} checked={3} />
+              <StarRatingRow numberOfStars={5} checked={2} />
+              <StarRatingRow numberOfStars={5} checked={1} />
+            </VStack>
           </Box>
         </Grid>
         <Grid>
