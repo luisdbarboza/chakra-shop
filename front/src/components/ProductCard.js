@@ -10,9 +10,15 @@ import {
 import { SERVER_URL } from "../constants/constants";
 
 function ProductCard({ name, price, seller, mainImage, id, reviewsCount }) {
+  let mainImageName = mainImage.split("/");
+
+  mainImageName = mainImageName[mainImageName.length - 1];
+
+  const imgPath = `${SERVER_URL}/images/${mainImageName}`;
+
   return (
     <Box borderWidth="1px" borderRadius="lg">
-      <Image src={`${SERVER_URL}/images/${mainImage}`} alt={`${name} cover`} />
+      <Image src={imgPath} alt={`${name} cover`} />
       <Box bg="lightgray" p="0.5rem">
         <Grid templateColumns="repeat(2, 50%)">
           <GridItem
@@ -29,7 +35,7 @@ function ProductCard({ name, price, seller, mainImage, id, reviewsCount }) {
           </GridItem>
           <GridItem colSpan={1} style={{ justifySelf: "end" }}>
             <Link color="blue" href={`/users/${seller.id}`}>
-              <a>{seller.name}</a>
+              {seller.name}
             </Link>
           </GridItem>
         </Grid>

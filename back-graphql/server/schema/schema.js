@@ -317,9 +317,6 @@ const RootQuery = new GraphQLObjectType({
             },
           ],
         };
-
-        console.log(query);
-
         const results = await Product.find(query);
 
         return results;

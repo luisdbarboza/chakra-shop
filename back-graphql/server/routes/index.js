@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
+const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const User = require("../models/users");
@@ -126,5 +127,17 @@ route.put(
     }
   }
 );
+
+route.get("/images/:img", (req, res) => {
+  const img = req.params.img;
+  const pathArchivo = path.resolve(__dirname, `../uploads/${img}`);
+  const pathNoEncontrado = path.resolve(__dirname, "../images/no-image.jpg");
+
+  if (!fs.existsSync(pathArchivo)) {
+    return res.status(400).sendFile(pathNoEncontrado);
+  }
+
+  res.sendFile(pathArchivo);
+});
 
 module.exports = route;
