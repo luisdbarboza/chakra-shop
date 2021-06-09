@@ -54,6 +54,9 @@ const ProductType = new GraphQLObjectType({
     images: {
       type: GraphQLList(GraphQLString),
     },
+    mainImage: {
+      type: GraphQLString,
+    },
     description: {
       type: GraphQLString,
     },
@@ -77,6 +80,12 @@ const ProductType = new GraphQLObjectType({
     },
     reviews: {
       type: GraphQLList(ReviewType),
+    },
+    reviewsCount: {
+      type: GraphQLInt,
+    },
+    averageRating: {
+      type: GraphQLInt,
     },
   }),
 });
@@ -130,6 +139,9 @@ const UserType = new GraphQLObjectType({
     password: {
       type: GraphQLString,
     },
+    profilePhoto: {
+      type: GraphQLString,
+    },
     cart: {
       type: GraphQLList(CartItemType),
       resolve(parent, args) {
@@ -147,6 +159,9 @@ const LogInType = new GraphQLObjectType({
     },
     token: {
       type: GraphQLString,
+    },
+    status: {
+      type: NotificationType,
     },
   }),
 });
@@ -213,6 +228,12 @@ const RootQuery = new GraphQLObjectType({
       },
       async resolve(parent, args) {
         const { email, password } = args;
+        const errorObject = {
+          status: {
+            ok: false,
+            message: "Email o password invalidos",
+          },
+        };
 
         const foundUser = await User.findOne({ email });
 
@@ -238,11 +259,70 @@ const RootQuery = new GraphQLObjectType({
             return {
               user: foundUser,
               token,
+              status: {
+                ok: true,
+                message: "Sesion iniciada!!",
+              },
             };
-          }
+          } else return errorObject;
         } else {
-          throw new Error("Usuario o password incorrectos");
+          return errorObject;
         }
+      },
+    },
+    search: {
+      type: GraphQLList(ProductType),
+      args: { filters: { type: GraphQLString } },
+      async resolve(parent, args) {
+        const filter = JSON.parse(args.filters);
+        let filterCount = 0;
+        const search = {};
+
+        if (filter.text && filter.text.length > 0) {
+          search.name = new RegExp(filter.text, "i");
+          filterCount++;
+        }
+
+        if (filter.category) {
+          search.category = filter.category;
+          filterCount++;
+        }
+
+        if (filter.priceRange) {
+          search.price = {
+            $gte: filter.priceRange[0],
+            $lte: filter.priceRange[1],
+          };
+          filterCount++;
+        }
+
+        if (filter.averageRating) {
+          search["review.rating"] = { $gte: filter.averageRating };
+          filterCount++;
+        }
+
+        const query = {
+          $or: [
+            {
+              name: search.name,
+            },
+            {
+              category: search.category,
+            },
+            {
+              price: search.price,
+            },
+            {
+              "review.rating": search["review.rating"],
+            },
+          ],
+        };
+
+        console.log(query);
+
+        const results = await Product.find(query);
+
+        return results;
       },
     },
   },

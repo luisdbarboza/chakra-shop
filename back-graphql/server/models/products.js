@@ -69,6 +69,22 @@ const productSchema = new Schema({
   reviews: [ReviewsSchema],
 });
 
+productSchema.virtual("mainImage").get(function () {
+  return this.images.length > 0 ? this.images[0] : null;
+});
+
+productSchema.virtual("reviewsCount").get(function () {
+  return this.reviews.length;
+});
+
+productSchema.virtual("averageRating").get(function () {
+  let sum = this.reviews.reduce((sum, review, index) => {
+    return review.rating;
+  }, 0);
+
+  return this.reviews.length === 0 ? 0 : sum / this.reviews.length;
+});
+
 productSchema.plugin(uniqueValidator, {
   message: "{PATH} debe ser unico",
 });
