@@ -4,7 +4,14 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { graphqlHTTP } = require("express-graphql");
-const schema = require("./schema/schema");
+// const schema = require("./schema/schema");
+const { makeExecutableSchema } = require("@graphql-tools/schema");
+const typeDefs = require("./graphql/schemas/schema");
+const resolvers = require("./graphql/resolvers/resolvers");
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+});
 
 const app = express();
 
@@ -18,7 +25,7 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 
-app.use(require("./routes/index"));
+app.use(require("./routes"));
 
 //conexion a la base de datos
 mongoose

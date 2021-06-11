@@ -13,17 +13,17 @@ let userObj = {
 const userReducer = (state, action) => {
   switch (action.type) {
     case "LOG_IN":
-      const { email, name, profilePicture, cartItems } = action.user;
+      const user = { ...action.user };
       const token = action.token;
 
-      action.user.loggedIn = true;
+      user.loggedIn = true;
 
       if (typeof window !== "undefined") {
-        localStorage.setItem("chakra_shop_user", JSON.stringify(action.user));
+        localStorage.setItem("chakra_shop_user", JSON.stringify(user));
         localStorage.setItem("chakra_shop_user_token", JSON.stringify(token));
       }
 
-      return { loggedIn: true, name, email, profilePicture, cartItems };
+      return { ...user };
     case "LOG_OUT":
       if (typeof window !== "undefined") {
         localStorage.removeItem("chakra_shop_user");
@@ -47,8 +47,19 @@ const AuthContextProvider = ({ children }) => {
 
   useEffect(() => {
     let storedUser = localStorage.getItem("chakra_shop_user");
+    let token = localStorage.getItem("chakra_shop_user_token");
 
-    console.log(storedUser);
+    if (storedUser && token) {
+      storedUser = JSON.parse(storedUser);
+      token = JSON.parse(token);
+      dispatchUser({
+        type: "LOG_IN",
+        user: storedUser,
+        token,
+      });
+    } else {
+      console.log(":(");
+    }
   }, []);
 
   return (

@@ -9,8 +9,19 @@ import {
   InputGroup,
   InputRightElement,
   Center,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuItemOption,
+  MenuGroup,
+  MenuOptionGroup,
+  MenuIcon,
+  MenuCommand,
+  MenuDivider,
 } from "@chakra-ui/react";
 import { DrawerContext } from "../containers/NavigationBar";
+import { AuthContext } from "../context/AuthContext";
 import { AiOutlineMenu, AiOutlineSearch } from "react-icons/ai";
 
 const MenuButtonAndLogo = () => {
@@ -59,10 +70,10 @@ const SearchBar = () => {
             value={search}
             onChange={handleChange}
           />
-          <Link href={`/search/${search}`}>
-            <a>
-              <InputRightElement w="3rem" children={<SearchButton />} />
-            </a>
+          <Link
+            href={search.length > 0 ? `/search?search=${search}` : "/search"}
+          >
+            <InputRightElement w="3rem" children={<SearchButton />} />
           </Link>
         </InputGroup>
       </HStack>
@@ -71,12 +82,36 @@ const SearchBar = () => {
 };
 
 const UserOptions = () => {
+  const { user, dispatchUser } = useContext(AuthContext);
+
   return (
     <Center>
-      <Box color="white" _hover={{ color: "orange", cursor: "pointer" }}>
-        <Link href="/login">
-          <a>Iniciar Sesion</a>
-        </Link>
+      <Box color="white" _hover={{ cursor: "pointer" }}>
+        {!user.loggedIn ? (
+          <Link href="/login">
+            <a>Iniciar Sesion</a>
+          </Link>
+        ) : (
+          <Menu>
+            <MenuButton>{user.name}</MenuButton>
+            <MenuList bg="#131921">
+              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+                Carrito
+              </MenuItem>
+              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+                Perfil
+              </MenuItem>
+              <MenuItem
+                _hover={{ backgroundColor: "skyblue", color: "black" }}
+                onClick={() => {
+                  dispatchUser({ type: "LOG_OUT" });
+                }}
+              >
+                Salir
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        )}
       </Box>
     </Center>
   );
@@ -84,7 +119,14 @@ const UserOptions = () => {
 
 const Topbar = React.memo(() => {
   return (
-    <Box bg="#131921" w="100%" p={4} position="fixed" color="white">
+    <Box
+      bg="#131921"
+      w="100%"
+      p={4}
+      position="fixed"
+      zIndex="100"
+      color="white"
+    >
       <Flex justify="space-between" wrap="wrap">
         <MenuButtonAndLogo />
         <SearchBar />

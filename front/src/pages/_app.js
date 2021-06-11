@@ -1,20 +1,17 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import AuthContextProvider from "../context/AuthContext";
-import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
-import { GRAPHQL_SERVER_URL } from "../constants/constants";
-
-//configuracion apollo client
-const client = new ApolloClient({
-  uri: GRAPHQL_SERVER_URL,
-  cache: new InMemoryCache(),
-});
+import { ApolloProvider } from "@apollo/client";
+import { client } from "../constants/constants";
+import Layout from "../layouts/Layout";
 
 function MyApp({ Component, pageProps }) {
   return (
     <ChakraProvider CSSReset>
       <AuthContextProvider>
         <ApolloProvider client={client}>
-          <Component {...pageProps} />
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </ApolloProvider>
       </AuthContextProvider>
     </ChakraProvider>

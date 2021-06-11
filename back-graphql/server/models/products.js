@@ -79,10 +79,10 @@ productSchema.virtual("reviewsCount").get(function () {
 
 productSchema.virtual("averageRating").get(function () {
   let sum = this.reviews.reduce((sum, review, index) => {
-    return review.rating;
+    return sum + review.rating;
   }, 0);
 
-  return this.reviews.length === 0 ? 0 : sum / this.reviews.length;
+  return this.reviews.length === 0 ? 0 : Math.floor(sum / this.reviews.length);
 });
 
 productSchema.plugin(uniqueValidator, {

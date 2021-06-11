@@ -1,5 +1,12 @@
+//crea un usuario
+mutation{
+  addUser(name: "Guts", email:"blsword@gmail.com", password: "78945") {
+    name
+    email
+  }
+}
 
-inicia sesion
+//inicia sesion
 {
   login (email: "lbarbozanav@gmail.com", password:"12345"){
     user {
@@ -21,11 +28,86 @@ inicia sesion
 
 // buscar un producto con filtros
 {
-	search(filters: "{\"text\":null,\"category\":null,\"priceRange\":null,\"averageRating\":0}") {
+	search(filters: "{\"text\":\"fi\",\"category\":null,\"range\":null}") {
 		name
     price
     averageRating
     reviewsCount
     mainImage
+    reviews {
+      id
+      author {
+        id
+        name
+      }
+    }
+  }
+}
+
+//agrega un producto
+mutation {
+	addProduct(name:"Metal Gear Solid 3", category: "60c192a5cbeff41e6123c786", price: 59.99, quantity: 10, description: "Kojima's materpiece", seller: "60ba9d22caf94a0816381057") {
+	  id
+	}
+}
+
+//sube imagen referencial del producto
+
+// obtener la info de rodos los productos
+{
+	products {
+    id
+    name
+    price
+    mainImage
+    averageRating
+    reviewsCount
+    seller {
+      id
+      name
+    }
+  }
+}
+
+//o esta
+{
+	product(id: "60c193cf56a8201faf92cc40"){
+    id
+    name
+    price
+    mainImage
+    description
+    images
+    status
+    quantity
+    averageRating
+    reviewsCount
+    seller {
+      id
+      name
+    }
+    reviews {
+      id
+      author {
+        id
+        name
+      }
+      text
+      date
+    }
+  }
+}
+
+//Agregar una review a un producto
+mutation {
+	addReview(authorId: "60ba9d22caf94a0816381057", productId: "60c193cf56a8201faf92cc40", rating: 4, text: "Best RPG EVER") {
+    message
+  }
+}
+
+//agregar un item al carrito de compra
+mutation {
+  addItemToCart(userId: "60c1982856a8201faf92cc42", productId: "60c193cf56a8201faf92cc40", quantity: 2) {
+    message
   }
 }

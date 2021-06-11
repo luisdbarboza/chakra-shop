@@ -27,6 +27,14 @@ const getAllCategories = gql`
   }
 `;
 
+const getAllProductsId = gql`
+  {
+    products {
+      id
+    }
+  }
+`;
+
 const getAllProducts = gql`
   {
     products {
@@ -44,4 +52,58 @@ const getAllProducts = gql`
   }
 `;
 
-export { logInQuery, getAllCategories, getAllProducts };
+const getSingleProductInfo = gql`
+  query ($id: ID!) {
+    product(id: $id) {
+      id
+      name
+      price
+      description
+      mainImage
+      images
+      status
+      quantity
+      averageRating
+      reviewsCount
+      seller {
+        id
+        name
+      }
+      reviews {
+        id
+        author {
+          id
+          name
+        }
+        text
+        date
+      }
+    }
+  }
+`;
+
+const getSearchResults = gql`
+  query searchProducts($filters: String!) {
+    search(filters: $filters) {
+      id
+      name
+      price
+      averageRating
+      reviewsCount
+      mainImage
+      seller {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export {
+  logInQuery,
+  getAllCategories,
+  getAllProducts,
+  getAllProductsId,
+  getSingleProductInfo,
+  getSearchResults,
+};

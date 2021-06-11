@@ -17,12 +17,14 @@ import {
 import { useQuery } from "@apollo/client";
 import Link from "next/link";
 import { DrawerContext } from "../containers/NavigationBar";
+import { AuthContext } from "../context/AuthContext";
 import { RiArrowRightSLine } from "react-icons/ri";
 import { getAllCategories } from "../graphql/queries";
 
 const Drawer = React.memo(() => {
   const { data, loading, error } = useQuery(getAllCategories);
   const { drawerState, dispatchDrawerState } = useContext(DrawerContext);
+  const { user } = useContext(AuthContext);
   const { isOpen } = drawerState;
 
   const onClose = useCallback(() => {
@@ -35,12 +37,15 @@ const Drawer = React.memo(() => {
         isOpen={isOpen}
         placement="left"
         onClose={onClose}
+        zIndex="200"
         // finalFocusRef={btnRef}
       >
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Hola Usuario</DrawerHeader>
+          <DrawerHeader>
+            {user.loggedIn ? "Hola " + user.name : "Hola Usuario"}
+          </DrawerHeader>
 
           <DrawerBody>
             {loading ? (
@@ -50,7 +55,7 @@ const Drawer = React.memo(() => {
                 {data.categories.map((category, index) => {
                   return (
                     <Box mb="1rem" key={index}>
-                      <Link href={`/categories/${category.id}`}>
+                      <Link href={`/search?category=${category.id}`}>
                         <a>
                           <Flex align="center">
                             <Box

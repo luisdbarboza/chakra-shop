@@ -3,13 +3,17 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 const Schema = mongoose.Schema;
 
-const CartItemSchema = new Schema({
+const cartItemSchema = new Schema({
   item: {
     type: Schema.Types.ObjectId,
     ref: "Product",
   },
   quantity: {
     type: Number,
+    validate: {
+      validator: (number) => number > 0,
+      message: "Tienes que pedir 1 producto o mas",
+    },
     default: 0,
   },
 });
@@ -40,7 +44,7 @@ const userSchema = new Schema({
     type: String,
     required: [true, "El campo password es obligatorio"],
   },
-  cart: [CartItemSchema],
+  cart: [cartItemSchema],
 });
 
 userSchema.methods.toJSON = function () {
