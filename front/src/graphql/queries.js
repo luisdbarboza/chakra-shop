@@ -75,6 +75,7 @@ const getSingleProductInfo = gql`
           id
           name
         }
+        rating
         text
         date
       }

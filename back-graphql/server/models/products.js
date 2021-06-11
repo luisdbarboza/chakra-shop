@@ -12,12 +12,14 @@ const ReviewsSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: "User",
+    required: true,
   },
   rating: {
     type: Number,
     validate: {
       validator: (rating) => rating > 0 && rating < 6 && rating % 1 === 0,
       message: "Valoracion invalida",
+      required: true,
     },
   },
   text: {
@@ -25,9 +27,13 @@ const ReviewsSchema = new Schema({
     validate: {
       validator: (review) => review.length > 20,
       message: "Tu resena debe tener mas de 20 caracteres",
+      required: true,
     },
   },
-  date: Date,
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 const productSchema = new Schema({

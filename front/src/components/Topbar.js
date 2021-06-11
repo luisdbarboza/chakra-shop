@@ -96,7 +96,10 @@ const UserOptions = () => {
             <MenuButton>{user.name}</MenuButton>
             <MenuList bg="#131921">
               <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
-                Carrito
+                <Link href={`/cart/${user.id}`}>Mi carrito</Link>
+              </MenuItem>
+              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+                <Link href={`/addProduct`}>Registrar producto</Link>
               </MenuItem>
               <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
                 Perfil
