@@ -1,4 +1,4 @@
-import { useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import {
   Grid,
   GridItem,
@@ -20,22 +20,21 @@ import { AuthContext } from "context/AuthContext";
 import { client, SERVER_URL } from "constants/constants";
 import { useQuery, useMutation } from "@apollo/client";
 import { addProductMutation } from "graphql/mutations";
-import { getAllCategories } from "graphql/queries";
+import { getAllCategories, getAllProducts } from "graphql/queries";
 
 import useForm from "hooks/useForm";
 import { isEmpty } from "helpers/helpers";
+import { useRouter } from "next/router";
 
 const AddProductForm = () => {
-  const [
-    { name, price, description, quantity, selectCategory },
-    setFormFields,
-  ] = useForm({
+  const [{ name, price, description, quantity }, setFormFields] = useForm({
     name: "",
     price: 0,
     description: "",
     quantity: 1,
-    selectCategory: "",
   });
+  const [selectCategory, setSelectCategory] = useState("");
+  const router = useRouter();
   const { data: categoryData, loading } = useQuery(getAllCategories);
   const [mutate, { data }] = useMutation(addProductMutation);
   const filesRef = useRef(null);
@@ -98,9 +97,20 @@ const AddProductForm = () => {
           seller: user.id,
           images: JSON.stringify(images),
         },
+        refetchQueries: [
+          {
+            query: getAllProducts,
+          },
+        ],
       });
     }
   };
+
+  useEffect(() => {
+    if (categoryData && categoryData.categories) {
+      setSelectCategory(categoryData.categories[0].id);
+    }
+  }, [categoryData]);
 
   useEffect(async () => {
     if (data && data.addProduct) {
@@ -110,6 +120,11 @@ const AddProductForm = () => {
       });
     }
   }, [data]);
+
+  useEffect(() => {
+    console.log(user.loggedIn);
+    if (!user.loggedIn) router.push("/");
+  }, []);
 
   return (
     <Box m="2rem">
@@ -156,7 +171,9 @@ const AddProductForm = () => {
           <FormControl mt="1rem">
             <FormLabel>Categoria</FormLabel>
             <Select
-              onChange={setFormFields}
+              onChange={(e) => {
+                setSelectCategory(e.target.value);
+              }}
               name="selectCategory"
               value={selectCategory}
             >

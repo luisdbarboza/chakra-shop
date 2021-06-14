@@ -37,7 +37,9 @@ function ProductDetails({ product }) {
 
   let imageName = product.images[selectedImage];
 
-  const imgPath = `${SERVER_URL}/images/products/${imageName}`;
+  const imgPath = product.imageName
+    ? `${SERVER_URL}/images/products/${mainImage}`
+    : "/images/placeholder.png";
 
   const SelectAndOptions = () => {
     const options = [];

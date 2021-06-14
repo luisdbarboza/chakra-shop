@@ -20,7 +20,9 @@ function ProductCard({
   reviewsCount,
   averageRating,
 }) {
-  const imgPath = `${SERVER_URL}/images/products/${mainImage}`;
+  const imgPath = mainImage
+    ? `${SERVER_URL}/images/products/${mainImage}`
+    : "/images/placeholder.png";
 
   return (
     <Link href={`/products/${id}`}>
