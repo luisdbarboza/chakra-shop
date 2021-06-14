@@ -65,10 +65,20 @@ const removeProductFromCart = gql`
   }
 `;
 
+const addOrder = gql`
+  mutation ($order: String!) {
+    addOrder(order: $order) {
+      ok
+      message
+    }
+  }
+`;
+
 export {
   addUserMutation,
   addUserReview,
   addProductMutation,
+  addOrder,
   addItemToCart,
   removeProductFromCart,
 };

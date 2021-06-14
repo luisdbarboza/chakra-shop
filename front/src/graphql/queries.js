@@ -118,6 +118,50 @@ const getUserCartInfo = gql`
   }
 `;
 
+const getUserOrders = gql`
+  query ($id: ID!) {
+    user(id: $id) {
+      id
+      orders {
+        id
+        fullName
+        city
+        totalItems
+        totalAmount
+        items {
+          item {
+            id
+            name
+          }
+          quantity
+        }
+      }
+    }
+  }
+`;
+
+const getSingleOrder = gql`
+  query ($id: ID!) {
+    order(id: $id) {
+      id
+      fullName
+      city
+      country
+      totalItems
+      totalAmount
+      date
+      items {
+        quantity
+        item {
+          name
+          mainImage
+          price
+        }
+      }
+    }
+  }
+`;
+
 export {
   logInQuery,
   getAllCategories,
@@ -126,4 +170,6 @@ export {
   getSingleProductInfo,
   getSearchResults,
   getUserCartInfo,
+  getUserOrders,
+  getSingleOrder,
 };

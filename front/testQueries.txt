@@ -121,3 +121,11 @@ mutation {
     message
   }
 }
+
+//Agrega un pedido del carrito al historial de pedidos de un usuario
+mutation {
+	addOrder(order: "{\"address\":\"San jacinto\",\"city\":\"Maracaibo\",\"country\":\"Venezuela\",\"fullName\":\"Luis\",\"totalAmount\":180,\"totalItems\":6,\"userId\":\"60c6a927b160b5082514be60\",\"items\":[{\"item\":\"60c6a67c954419455f909541\",\"quantity\":6}]}") {
+    ok
+    message
+  }
+}

@@ -10,6 +10,11 @@ module.exports = {
     user: (_, { id }) => User.findById(id),
     product: (_, { id }) => Product.findById(id),
     category: (_, { id }) => Category.findById(id),
+    order: async (_, { id }) => {
+      let user = await User.findOne({ "orders._id": id });
+
+      return user.orders.filter((order) => order.id === id)[0];
+    },
     users: () => User.find({}),
     products: () => Product.find({}),
     categories: () => Category.find({}),
@@ -100,8 +105,6 @@ module.exports = {
       };
 
       if (filterCount === 0) query = {};
-
-      console.log(query);
 
       const results = await Product.find(query);
 
@@ -201,6 +204,32 @@ module.exports = {
         message: "Item agregado al carrito",
       };
     },
+    addOrder: async (_, { order }) => {
+      order = JSON.parse(order);
+      order.date = Date.now();
+
+      const user = await User.findById(order.userId);
+
+      delete order.userId;
+
+      user.orders.push(order);
+
+      order.items.forEach(async (item, index) => {
+        await Product.updateOne(
+          { _id: item.item },
+          { $inc: { quantity: item.quantity * -1 } }
+        );
+      });
+
+      user.cart = [];
+
+      await user.save();
+
+      return {
+        ok: true,
+        message: "Pedido agregado",
+      };
+    },
     removeUser: async (_, { id }) => {
       return User.findByIdAndRemove(id);
     },
@@ -232,6 +261,9 @@ module.exports = {
     cart: (parent, args) => {
       return parent.cart;
     },
+    orders: (parent, args) => {
+      return parent.orders;
+    },
   },
   Product: {
     seller: (parent, args) => {
@@ -254,6 +286,18 @@ module.exports = {
   CartItem: {
     item: (parent, args) => {
       return Product.findById(parent.item);
+    },
+  },
+  Order: {
+    items: (parent, args) => {
+      return parent.items;
+    },
+  },
+  OrderItem: {
+    item: async (parent, args) => {
+      const item = await Product.findById(parent.item);
+
+      return item;
     },
   },
 };

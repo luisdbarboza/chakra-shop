@@ -37,9 +37,10 @@ function ProductDetails({ product }) {
 
   let imageName = product.images[selectedImage];
 
-  const imgPath = product.imageName
-    ? `${SERVER_URL}/images/products/${mainImage}`
-    : "/images/placeholder.png";
+  const imgPath =
+    typeof imageName !== "undefined"
+      ? `${SERVER_URL}/images/products/${imageName}`
+      : "/images/placeholder.png";
 
   const SelectAndOptions = () => {
     const options = [];
@@ -172,7 +173,8 @@ function ProductDetails({ product }) {
             <GridItem>
               {user.loggedIn &&
               user.id !== product.seller.id &&
-              !isOnCartAlready ? (
+              !isOnCartAlready &&
+              product.quantity > 0 ? (
                 <SelectAndOptions />
               ) : (
                 <>{product.quantity}</>
@@ -181,7 +183,8 @@ function ProductDetails({ product }) {
             <GridItem colSpan={2}>
               {user.loggedIn &&
                 user.id !== product.seller.id &&
-                !isOnCartAlready && (
+                !isOnCartAlready &&
+                product.quantity > 0 && (
                   <Button
                     bg="#F0C040"
                     color="black"

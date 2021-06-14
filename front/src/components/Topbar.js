@@ -102,6 +102,9 @@ const UserOptions = () => {
                 <Link href={`/addProduct`}>Registrar producto</Link>
               </MenuItem>
               <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+                <Link href={`/orderHistory`}>Historial de pedidos</Link>
+              </MenuItem>
+              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
                 Perfil
               </MenuItem>
               <MenuItem

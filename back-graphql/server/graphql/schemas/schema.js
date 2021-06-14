@@ -6,6 +6,7 @@ module.exports = `
         password: String!
         profilePhoto: String
         cart: [CartItem]
+        orders: [Order]
     }
 
     type Category {
@@ -55,10 +56,28 @@ module.exports = `
         status: Notification
     }
 
+    type OrderItem {
+        item: Product,
+        quantity: Int
+    }
+
+    type Order {
+        id: String
+        fullName: String,
+        city: String,
+        country: String,
+        address: String,
+        totalAmount: Int,
+        totalItems: Int,
+        date: String
+        items: [OrderItem]
+    }
+
     type Query {
         user(id: ID!): User 
         product(id: ID!): Product 
         category(id: ID!): Category 
+        order(id: ID!): Order
         users: [User]
         products: [Product]
         categories: [Category]
@@ -96,6 +115,9 @@ module.exports = `
             productId: ID
             quantity: Int
         ):Notification
+        addOrder(
+            order: String
+        ): Notification
         purchaseCartItems(
             items: String
         ):Notification

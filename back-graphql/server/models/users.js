@@ -18,6 +18,46 @@ const cartItemSchema = new Schema({
   },
 });
 
+const orderSchema = new Schema({
+  fullName: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  country: {
+    type: String,
+    required: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  items: [
+    {
+      item: {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+      quantity: Number,
+    },
+  ],
+  totalAmount: {
+    type: Number,
+    required: true,
+  },
+  totalItems: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now(),
+  },
+});
+
 const userSchema = new Schema({
   name: {
     type: String,
@@ -45,7 +85,7 @@ const userSchema = new Schema({
     required: [true, "El campo password es obligatorio"],
   },
   cart: [cartItemSchema],
-  purchases: [],
+  orders: [orderSchema],
 });
 
 userSchema.methods.toJSON = function () {

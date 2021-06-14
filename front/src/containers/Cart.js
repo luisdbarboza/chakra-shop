@@ -62,7 +62,7 @@ function Cart() {
                 justifyItems="center"
                 w={{ base: "90%", md: "50%" }}
               >
-                <PurchaseCart cartData={cartData} />
+                <PurchaseCart cartData={cartData} userData={user} />
               </GridItem>
             </Grid>
           ) : (
