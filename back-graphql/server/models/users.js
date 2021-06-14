@@ -38,13 +38,14 @@ const userSchema = new Schema({
   },
   profilePhoto: {
     type: String,
-    default: "placeholder.png",
+    default: "",
   },
   password: {
     type: String,
     required: [true, "El campo password es obligatorio"],
   },
   cart: [cartItemSchema],
+  purchases: [],
 });
 
 userSchema.methods.toJSON = function () {

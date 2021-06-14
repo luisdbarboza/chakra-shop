@@ -71,6 +71,7 @@ module.exports = `
             name: String
             email: String
             password: String
+            profilePhoto: String
         ): Notification
         addCategory(
             name: String!
@@ -82,6 +83,7 @@ module.exports = `
             description: String
             seller: ID
             category: ID
+            images: String
         ):Product
         addReview(
             authorId: ID
@@ -94,6 +96,9 @@ module.exports = `
             productId: ID
             quantity: Int
         ):Notification
+        purchaseCartItems(
+            items: String
+        ):Notification
         removeUser(
             id: ID!
         ):User
@@ -103,6 +108,10 @@ module.exports = `
         removeProduct(
             id: ID! 
         ):Product
+        removeProductFromCart(
+            userId: ID
+            productId: ID
+        ):Notification
     }
 
     schema {

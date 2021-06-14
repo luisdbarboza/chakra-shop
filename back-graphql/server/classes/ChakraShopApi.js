@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const multer = require("multer");
-const fs = require("fs");
+const fs = require("fs/promises");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
+
 const User = require("../models/users");
 const Product = require("../models/products");
 
@@ -15,93 +15,72 @@ const {
 
 const acceptedTypes = ["image/jpeg", "image/png"];
 
+const groups = {
+  products: { folder: "Products" },
+  users: { folder: "Users" },
+  kokoro: { folder: "Kokoro" },
+};
+
 //despues
 class ChakraShopApi {
-  static uploadOrUpdateUserPhoto(req, res) {
-    (async () => {
-      try {
-        //chequea si el archivo es invalido
-        let isValid = checkFileValidation(req, res, acceptedTypes);
+  async upload(req, res) {
+    try {
+      const files = req.files;
+      const type = req.params.type;
 
-        if (!isValid) return;
-
-        const customError = "Usuario inexistente";
-
-        const user = await User.findById(req.params.id);
-
-        if (user.profilePhoto && user.profilePhoto !== "placeholder.png") {
-          const oldProfilePicturePath =
-            path.join(__dirname, "../uploads") + "/" + user.profilePhoto;
-
-          await deleteFile(oldProfilePicturePath);
-        }
-
-        user.profilePhoto = req.file.filename;
-
-        await user.save();
-
-        res.json({
-          ok: true,
-          user,
+      if (!groups[type]) {
+        throw new Error({
+          message: "Tipo inexistente e invalido",
         });
-      } catch (err) {
-        respondWithErrorMessage(res, err, 500);
       }
-    })();
+
+      const filesUploaded = [];
+
+      for (let file of files) {
+        const folderPath = path.join(
+          __dirname,
+          `../uploads/${groups[type].folder}`
+        );
+
+        const fileContents = await fs.readFile(file.path);
+
+        await fs.writeFile(path.join(folderPath, file.filename), fileContents);
+
+        await fs.unlink(file.path);
+
+        file.url = `${process.env.API_URL}/images/${groups[type].folder}/${file.filename}`;
+
+        delete file.buffer;
+        filesUploaded.push(file);
+      }
+
+      res.json({
+        ok: true,
+        data: filesUploaded,
+      });
+    } catch (err) {
+      for (let file of req.files) {
+        deleteFile(file.path);
+      }
+
+      respondWithErrorMessage(res, err, 500);
+    }
   }
 
-  static uploadOrUpdateProductImages(req, res) {
-    (async () => {
-      try {
-        const images = req.files.map((imageObj) => imageObj.path);
+  async sendFile(req, res) {
+    const { type, filename } = req.params;
 
-        //chequea si cada archivo es invalido
-        for (let file of req.files) {
-          req.file = file;
-
-          let isValid = checkFileValidation(req, res, acceptedTypes);
-
-          if (!isValid) throw new Error("Formatos de archivos invalidos");
-        }
-
-        const customError = "Producto inexistente";
-
-        const product = await Product.findById(req.params.id);
-
-        if (product.images.length === 0) {
-          product.images = images;
-        } else {
-          for (let image of product.images) {
-            await deleteFile(image);
-          }
-
-          product.images = images;
-        }
-
-        await product.save();
-
-        res.json({
-          ok: true,
-          product,
-        });
-      } catch (err) {
-        console.log(err);
-        respondWithErrorMessage(res, err, 500);
-      }
-    })();
-  }
-
-  static sendFile(req, res) {
-    const img = req.params.img;
-    const pathArchivo = path.resolve(__dirname, `../uploads/${img}`);
-    const pathNoEncontrado = path.resolve(__dirname, "../images/no-image.jpg");
-
-    if (!fs.existsSync(pathArchivo)) {
-      return res.status(400).sendFile(pathNoEncontrado);
+    if (!groups[type]) {
+      return res.status(400).json({
+        ok: false,
+        message: "Tipo invalido",
+      });
     }
 
-    res.sendFile(pathArchivo);
+    res.sendFile(
+      path.join(__dirname, `../uploads/${groups[type].folder}/${filename}`)
+    );
   }
 }
 
-module.exports = ChakraShopApi;
+module.exports = new ChakraShopApi();

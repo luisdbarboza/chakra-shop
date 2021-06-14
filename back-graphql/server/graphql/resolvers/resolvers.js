@@ -109,7 +109,7 @@ module.exports = {
     },
   },
   Mutation: {
-    addUser: async (_, { name, email, password }) => {
+    addUser: async (_, { name, email, password, profilePhoto = "" }) => {
       const customError = "Error, un usuario con ese email ya tiene cuenta";
 
       try {
@@ -123,6 +123,7 @@ module.exports = {
             name,
             email,
             password: hashedPassword,
+            profilePhoto,
           });
 
           await user.save();
@@ -154,7 +155,7 @@ module.exports = {
     },
     addProduct: async (
       _,
-      { name, price, quantity, description, seller, category }
+      { name, price, quantity, description, seller, category, images }
     ) => {
       const product = new Product({
         name: name,
@@ -163,6 +164,7 @@ module.exports = {
         description: description,
         seller: seller,
         category: category,
+        images: JSON.parse(images),
       });
 
       await Category.update(
@@ -214,6 +216,17 @@ module.exports = {
     removeProduct: (parent, { id }) => {
       return Product.findByIdAndRemove(id);
     },
+    removeProductFromCart: async (parent, { userId, productId }) => {
+      await User.updateOne(
+        { _id: userId },
+        { $pull: { cart: { item: productId } } }
+      );
+
+      return {
+        ok: true,
+        message: "Item borrado del carrito de compra",
+      };
+    },
   },
   User: {
     cart: (parent, args) => {
@@ -238,9 +251,9 @@ module.exports = {
       return User.findById(parent.author);
     },
   },
-  // Cart: {
-  //   item: (parent, args) => {
-
-  //   }
-  // }
+  CartItem: {
+    item: (parent, args) => {
+      return Product.findById(parent.item);
+    },
+  },
 };
