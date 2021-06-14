@@ -48,7 +48,7 @@ const Drawer = React.memo(() => {
           </DrawerHeader>
 
           <DrawerBody>
-            {loading ? (
+            {loading || !data || !data.categories ? (
               <Text>Cargando...</Text>
             ) : (
               <>

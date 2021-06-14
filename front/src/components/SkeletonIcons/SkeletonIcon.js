@@ -1,5 +1,4 @@
 import React from "react";
-import classes from "./SkeletonIcon.module.css";
 
 export default function SkeletonIcon({
   icon: Icon,
@@ -10,14 +9,22 @@ export default function SkeletonIcon({
 }) {
   if (loading) {
     return (
-      <div className={classes.graphic}>
-        <span>
-          <svg width={width} height={height}>
-            <Icon />
-          </svg>
-          <div className={classes.afterElement} />
-        </span>
-      </div>
+      <svg width={width} height={height}>
+        <defs>
+          <linearGradient id="bg">
+            <stop offset="0%" stopColor="gray">
+              <animate
+                attributeName="stop-color"
+                values="gray;lightgray;gray"
+                dur={`${duration}s`}
+                repeatCount="indefinite"
+              ></animate>
+            </stop>
+          </linearGradient>
+        </defs>
+
+        <Icon fill="url(#bg)" />
+      </svg>
     );
   } else {
     return (

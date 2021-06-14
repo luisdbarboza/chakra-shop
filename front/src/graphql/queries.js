@@ -100,6 +100,24 @@ const getSearchResults = gql`
   }
 `;
 
+const getUserCartInfo = gql`
+  query ($id: ID!) {
+    user(id: $id) {
+      cart {
+        id
+        quantity
+        item {
+          id
+          name
+          mainImage
+          quantity
+          price
+        }
+      }
+    }
+  }
+`;
+
 export {
   logInQuery,
   getAllCategories,
@@ -107,4 +125,5 @@ export {
   getAllProductsId,
   getSingleProductInfo,
   getSearchResults,
+  getUserCartInfo,
 };

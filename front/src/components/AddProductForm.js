@@ -17,7 +17,7 @@ import {
 
 import Swal from "sweetalert2";
 import { AuthContext } from "context/AuthContext";
-import { client } from "constants/constants";
+import { client, SERVER_URL } from "constants/constants";
 import { useQuery, useMutation } from "@apollo/client";
 import { addProductMutation } from "graphql/mutations";
 import { getAllCategories } from "graphql/queries";
@@ -44,7 +44,7 @@ const AddProductForm = () => {
     e.preventDefault();
     const errors = [];
 
-    if (isEmpty(name) || isEmpty(description) || isEmpty(selectCategory)) {
+    if (isEmpty(name) || isEmpty(description)) {
       errors.push("Campos vacios");
     }
 
@@ -56,9 +56,9 @@ const AddProductForm = () => {
       errors.push("cantidad invalida");
     }
 
-    if (filesRef.current.files.length === 0) {
-      errors.push("Debes proveer al menos 1 imagen referencial");
-    }
+    // if (filesRef.current.files.length === 0) {
+    //   errors.push("Debes proveer al menos 1 imagen referencial");
+    // }
 
     if (errors.length > 0) {
       await Swal.fire({
@@ -67,7 +67,27 @@ const AddProductForm = () => {
         text: "Se encontraron los siguientes errores: " + errors.toString(),
       });
     } else {
-      console.log(name, price, description, quantity, selectCategory);
+      const formData = new FormData();
+
+      for (let file of filesRef.current.files) {
+        formData.append("images", file);
+      }
+
+      const response = await fetch(`${SERVER_URL}/images/upload/products`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const responseData = await response.json();
+
+      let images = [];
+
+      if (responseData.ok) {
+        responseData.data.forEach((image) => {
+          images.push(image.filename);
+        });
+      }
+
       mutate({
         variables: {
           name,
@@ -76,51 +96,20 @@ const AddProductForm = () => {
           quantity: Number(quantity),
           category: selectCategory,
           seller: user.id,
+          images: JSON.stringify(images),
         },
       });
     }
-
-    // const { data, error } = await client.query({
-    //   query: logInQuery,
-    //   variables: {
-    //     email,
-    //     password,
-    //   },
-    // });
-
-    // if (data && data.login && data.login.token) {
-    //   dispatchUser({
-    //     type: "LOG_IN",
-    //     user: data.login.user,
-    //     token: data.login.token,
-    //   });
-
-    //   await Swal.fire({
-    //     icon: "success",
-    //     text: "Has iniciado sesion, seras redirigido a la pantalla principal",
-    //   });
-
-    //   router.push("/");
-    // } else {
-    //   await Swal.fire({
-    //     icon: "error",
-    //     title: "Oops...",
-    //     text: "Email o contrasena incorrectos",
-    //   });
-    // }
   };
 
   useEffect(async () => {
-    if (data) {
-      if (data.addProduct.id) {
-        console.log("se agrego el producto");
-      }
+    if (data && data.addProduct) {
+      await Swal.fire({
+        icon: "success",
+        text: "Producto guardado!!!",
+      });
     }
   }, [data]);
-
-  // const handleFileInput = (e) => {
-  //   console.log(filesRef.current.files);
-  // };
 
   return (
     <Box m="2rem">

@@ -3,25 +3,41 @@ import {
   Box,
   Grid,
   GridItem,
+  Flex,
   HStack,
   Image,
   Heading,
   Select,
   Button,
 } from "@chakra-ui/react";
+import Swal from "sweetalert2";
+import { useQuery, useMutation } from "@apollo/client";
 import { SERVER_URL } from "constants/constants";
+import { AuthContext } from "context/AuthContext";
+import { getUserCartInfo } from "graphql/queries";
+import { addItemToCart } from "graphql/mutations";
 
 import StarRatingRow from "components/StarRatingRow";
+import useForm from "hooks/useForm";
 
 import Link from "next/link";
 
 function ProductDetails({ product }) {
   const [selectedImage, setSelectedImage] = useState(0);
+  const { user } = useContext(AuthContext);
+  const [{ quantity }, setQuantity] = useForm({
+    quantity: "1",
+  });
+  const { data } = useQuery(getUserCartInfo, {
+    variables: {
+      id: user.id,
+    },
+  });
+  const [mutate, mutationData] = useMutation(addItemToCart);
 
-  let imageName = product.images[selectedImage].split("/");
-  imageName = imageName[imageName.length - 1];
+  let imageName = product.images[selectedImage];
 
-  const imgPath = `${SERVER_URL}/images/${imageName}`;
+  const imgPath = `${SERVER_URL}/images/products/${imageName}`;
 
   const SelectAndOptions = () => {
     const options = [];
@@ -34,7 +50,49 @@ function ProductDetails({ product }) {
       );
     }
 
-    return <Select mr="0.5rem">{options}</Select>;
+    return (
+      <Select
+        name="quantity"
+        value={quantity}
+        onChange={setQuantity}
+        mr="0.5rem"
+      >
+        {options}
+      </Select>
+    );
+  };
+
+  const isOnCartAlready =
+    !data || (!data && !data.user)
+      ? false
+      : data.user.cart.some((cartProduct) => {
+          return cartProduct.item.id === product.id;
+        });
+
+  useEffect(async () => {
+    if (
+      !mutationData.loading &&
+      mutationData.data &&
+      mutationData.data.addItemToCart.ok
+    ) {
+      await Swal.fire({
+        icon: "success",
+        text: mutationData.data.addItemToCart.message,
+      });
+
+      mutationData.data.addItemToCart.ok = false;
+    }
+  }, [mutationData]);
+
+  const handleCartUpdate = () => {
+    mutate({
+      variables: {
+        userId: user.id,
+        productId: product.id,
+        quantity: Number(quantity),
+      },
+      refetchQueries: [{ query: getUserCartInfo, variables: { id: user.id } }],
+    });
   };
 
   return (
@@ -45,8 +103,18 @@ function ProductDetails({ product }) {
         borderWidth="1px"
         borderRadius="5px"
         style={{ alignSelf: "center", justifySelf: "center" }}
+        h="500px"
+        w="100%"
       >
-        <Image src={imgPath} alt={product.name + " " + selectedImage} />
+        <Flex justify="center" align="center" h="100%" w="100%">
+          <Image
+            src={imgPath}
+            m="auto"
+            alt={product.name + " " + selectedImage}
+            borderRadius="5px"
+            h="100%"
+          />
+        </Flex>
       </GridItem>
       <GridItem colSpan={1} p="1rem">
         <Heading fontSize="2rem" as="h3" mt="1rem">
@@ -64,11 +132,7 @@ function ProductDetails({ product }) {
         <Grid templateColumns="30% 30% 30%" gap={1}>
           <GridItem colSpan={3}>Imagenes: </GridItem>
           {product.images.map((image, index) => {
-            let imageName = image.split("/");
-
-            imageName = imageName[imageName.length - 1];
-
-            const imgPath = `${SERVER_URL}/images/${imageName}`;
+            const imgPath = `${SERVER_URL}/images/products/${image}`;
 
             return (
               <Box
@@ -76,7 +140,7 @@ function ProductDetails({ product }) {
                 borderWidth="2px"
                 w="100%"
                 h="100%"
-                style={{ justifySelf: "center", alignSelf: "center" }}
+                style={{ display: "flex" }}
                 _hover={{ cursor: "pointer", borderWidth: "4px" }}
                 key={index}
               >
@@ -104,12 +168,27 @@ function ProductDetails({ product }) {
             <GridItem>{product.status}</GridItem>
             <GridItem>Cantidad</GridItem>
             <GridItem>
-              <SelectAndOptions />
+              {user.loggedIn &&
+              user.id !== product.seller.id &&
+              !isOnCartAlready ? (
+                <SelectAndOptions />
+              ) : (
+                <>{product.quantity}</>
+              )}
             </GridItem>
             <GridItem colSpan={2}>
-              <Button bg="#F0C040" color="black" w="100%">
-                Agregar al carrito
-              </Button>
+              {user.loggedIn &&
+                user.id !== product.seller.id &&
+                !isOnCartAlready && (
+                  <Button
+                    bg="#F0C040"
+                    color="black"
+                    w="100%"
+                    onClick={handleCartUpdate}
+                  >
+                    Agregar al carrito
+                  </Button>
+                )}
             </GridItem>
           </Grid>
         </Box>

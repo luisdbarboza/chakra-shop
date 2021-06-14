@@ -1,8 +1,8 @@
 //crea un usuario
 mutation{
-  addUser(name: "Guts", email:"blsword@gmail.com", password: "78945") {
-    name
-    email
+  addUser(name: "luis", email:"lbarbozanav@gmail.com", password: "12345", profilePhoto: "NaN1532dd70-379d-46d3-9a88-e30a5f3e8f02.png") {
+    ok
+    message
   }
 }
 
@@ -46,8 +46,10 @@ mutation{
 
 //agrega un producto
 mutation {
-	addProduct(name:"Metal Gear Solid 3", category: "60c192a5cbeff41e6123c786", price: 59.99, quantity: 10, description: "Kojima's materpiece", seller: "60ba9d22caf94a0816381057") {
+	addProduct(name:"1984", category: "60c129056f6fdb18631c8579", price: 12, quantity: 25, description: "Orwell's Dystopian masterpiece", seller: "60c6978da1cf4b3bc47ab4ab", images: "[\"NaN634ab847-134e-4271-ab6e-af60bfb5a4de.jpeg\",\"NaN9ee71c02-6f42-4541-ac6e-c8914c4c39ec.jpg\"]") {
 	  id
+    name
+    images
 	}
 }
 
@@ -108,6 +110,14 @@ mutation {
 //agregar un item al carrito de compra
 mutation {
   addItemToCart(userId: "60c1982856a8201faf92cc42", productId: "60c193cf56a8201faf92cc40", quantity: 2) {
+    message
+  }
+}
+
+//quitar productos del carrito
+mutation {
+  removeProductFromCart(userId: "60c1982856a8201faf92cc42", productId: "60c47c100c981e10325bc009") {
+    ok
     message
   }
 }

@@ -66,8 +66,6 @@ function ReviewForm({ product }) {
     }
   };
 
-  console.log(mutationData);
-
   useEffect(async () => {
     if (
       !mutationData.loading &&

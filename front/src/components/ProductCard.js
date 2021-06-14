@@ -5,6 +5,7 @@ import {
   Image,
   Grid,
   GridItem,
+  Flex,
   Link,
 } from "@chakra-ui/react";
 import { SERVER_URL } from "../constants/constants";
@@ -19,17 +20,28 @@ function ProductCard({
   reviewsCount,
   averageRating,
 }) {
-  let mainImageName = mainImage.split("/");
-
-  mainImageName = mainImageName[mainImageName.length - 1];
-
-  const imgPath = `${SERVER_URL}/images/${mainImageName}`;
+  const imgPath = `${SERVER_URL}/images/products/${mainImage}`;
 
   return (
     <Link href={`/products/${id}`}>
-      <Box borderWidth="1px" borderRadius="lg" h="max-content">
-        <Image src={imgPath} alt={`${name} cover`} />
-        <Box p="0.5rem">
+      <Box borderWidth="1px" borderRadius="lg" h="500px">
+        <Flex
+          justify="center"
+          align="center"
+          w="90%"
+          m="auto"
+          p="1rem"
+          h="350px"
+        >
+          <Image
+            src={imgPath}
+            alt={`${name} cover`}
+            h="100%"
+            style={{ objectFit: "cover" }}
+            borderRadius="5px"
+          />
+        </Flex>
+        <Box p="0.5rem" h="150px">
           <Grid templateColumns="repeat(2, 50%)">
             <GridItem
               colSpan={2}

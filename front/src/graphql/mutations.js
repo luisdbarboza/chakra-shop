@@ -31,6 +31,7 @@ const addProductMutation = gql`
     $quantity: Int!
     $description: String!
     $seller: ID!
+    $images: String!
   ) {
     addProduct(
       name: $name
@@ -39,10 +40,35 @@ const addProductMutation = gql`
       quantity: $quantity
       description: $description
       seller: $seller
+      images: $images
     ) {
       id
     }
   }
 `;
 
-export { addUserMutation, addUserReview, addProductMutation };
+const addItemToCart = gql`
+  mutation ($userId: ID!, $productId: ID!, $quantity: Int!) {
+    addItemToCart(userId: $userId, productId: $productId, quantity: $quantity) {
+      ok
+      message
+    }
+  }
+`;
+
+const removeProductFromCart = gql`
+  mutation ($userId: ID!, $productId: ID!) {
+    removeProductFromCart(userId: $userId, productId: $productId) {
+      ok
+      message
+    }
+  }
+`;
+
+export {
+  addUserMutation,
+  addUserReview,
+  addProductMutation,
+  addItemToCart,
+  removeProductFromCart,
+};

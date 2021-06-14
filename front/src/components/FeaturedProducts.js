@@ -1,7 +1,9 @@
-import { Box, Heading, Grid } from "@chakra-ui/react";
+import { Box, Heading, Grid, GridItem } from "@chakra-ui/react";
 import { useQuery } from "@apollo/client";
 import ProductCard from "components/ProductCard";
 import { getAllProducts } from "graphql/queries";
+import { ProductIcon } from "components/Icons/Icons";
+import SkeletonIcon from "components/SkeletonIcons/SkeletonIcon";
 
 const FeaturedProducts = () => {
   const { data, loading } = useQuery(getAllProducts);
@@ -17,8 +19,22 @@ const FeaturedProducts = () => {
         Productos destacados
       </Heading>
       <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap="1rem">
-        {loading ? (
-          <Heading size="1rem">Cargando</Heading>
+        {loading || !data || !data.products ? (
+          <>
+            <Box w="100%" h="100px">
+              <SkeletonIcon icon={ProductIcon} loading={true} duration={3} />
+            </Box>
+            <Box w="100%" h="100px">
+              <SkeletonIcon icon={ProductIcon} loading={true} duration={2} />
+            </Box>
+            <Box w="100%" h="100px">
+              <SkeletonIcon icon={ProductIcon} loading={true} duration={1} />
+            </Box>
+
+            <Box w="100%" h="100px">
+              <SkeletonIcon icon={ProductIcon} loading={true} duration={4} />
+            </Box>
+          </>
         ) : (
           <>
             {data.products.map((product, index) => {

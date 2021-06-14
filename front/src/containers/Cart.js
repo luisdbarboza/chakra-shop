@@ -1,72 +1,81 @@
-import {
-  Heading,
-  Grid,
-  GridItem,
-  Box,
-  Image,
-  Link,
-  Select,
-  Button,
-} from "@chakra-ui/react";
+import { useContext, useState, useEffect } from "react";
+import { Heading, Grid, GridItem, Box, Image, Button } from "@chakra-ui/react";
+import CartItem from "components/CartItem";
+import PurchaseCart from "components/PurchaseCart";
+
+import Swal from "sweetalert2";
+
+import { getUserCartInfo } from "graphql/queries";
+import { AuthContext } from "context/AuthContext";
+import { SERVER_URL } from "constants/constants";
+import { useQuery, useMutation } from "@apollo/client";
 
 function Cart() {
+  const { user } = useContext(AuthContext);
+  const { data, loading, error } = useQuery(getUserCartInfo, {
+    variables: {
+      id: user.id,
+    },
+  });
+  const [cartData, setCartData] = useState([]);
+
+  useEffect(() => {
+    if (!loading && data) {
+      setCartData(data.user.cart);
+    }
+  }, [data, loading]);
+
   return (
     <>
-      <Grid
-        templateColumns={{ base: "100%", md: "65% 35%" }}
-        alignItems="center"
-        justifyItems="center"
-      >
-        <GridItem colSpan={1}>
-          <Box p="1rem">
-            <Heading size="1rem" mb="1rem">
-              Carrito de compras
-            </Heading>
+      {!loading && data ? (
+        <>
+          <Heading size="1rem" m="1rem" mt="2rem">
+            Carrito de compras
+          </Heading>
+          {data.user.cart.length > 0 ? (
             <Grid
-              templateColumns="10% 50% 10% 20% 10%"
+              templateColumns={{ base: "100%" }}
               alignItems="center"
               justifyItems="center"
             >
-              <GridItem>
-                <Image src="/images/placeholder.png" alt="item" />
-              </GridItem>
+              {data.user.cart.map((item, index) => {
+                const quantity = item.quantity;
+                item = item.item; //ya es muy tarde como para cambiar esto 0.0
 
-              <GridItem>Lacoste pants</GridItem>
+                const imgPath = `${SERVER_URL}/images/products/${item.mainImage}`;
 
-              <GridItem>
-                <Select>
-                  <option>1</option>
-                </Select>
-              </GridItem>
-
-              <GridItem>$80</GridItem>
-
-              <GridItem>
-                <Button>Borrar</Button>
+                return (
+                  <GridItem key={index}>
+                    <CartItem
+                      item={item}
+                      quantity={quantity}
+                      user={user}
+                      imgPath={imgPath}
+                      setCartData={setCartData}
+                    />
+                  </GridItem>
+                );
+              })}
+              <GridItem
+                alignItems="center"
+                p="1rem"
+                justifyItems="center"
+                w={{ base: "90%", md: "50%" }}
+              >
+                <PurchaseCart cartData={cartData} />
               </GridItem>
             </Grid>
-          </Box>
-        </GridItem>
-        <GridItem
-          colSpan={1}
-          alignItems="center"
-          p="1rem"
-          justifyItems="center"
-          w={{ base: "50%", md: "100%" }}
-        >
-          <Box
-            bg="#F8F8F8"
-            border="1px solid #C0C0C0"
-            borderRadius="5px"
-            p="1rem"
-          >
-            <Heading size="1rem">Subtotal (2 items): $80</Heading>
-            <Button bg="#F0C040" color="black" w="100%">
-              Facturar
-            </Button>
-          </Box>
-        </GridItem>
-      </Grid>
+          ) : (
+            <Box m="1rem" mt="2rem">
+              Actualmente no tienes items en tu carrito de compras
+            </Box>
+          )}
+        </>
+      ) : (
+        <Box>
+          <Heading>Carrgando</Heading>
+        </Box>
+      )}
     </>
   );
 }
