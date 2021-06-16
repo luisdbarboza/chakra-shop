@@ -162,6 +162,19 @@ const getSingleOrder = gql`
   }
 `;
 
+const getUserPosts = gql`
+  query ($sellerId: ID!) {
+    posts(sellerId: $sellerId) {
+      id
+      name
+      price
+      description
+      images
+      quantity
+    }
+  }
+`;
+
 export {
   logInQuery,
   getAllCategories,
@@ -172,4 +185,5 @@ export {
   getUserCartInfo,
   getUserOrders,
   getSingleOrder,
+  getUserPosts,
 };

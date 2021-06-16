@@ -105,6 +105,9 @@ const UserOptions = () => {
                 <Link href={`/orderHistory`}>Historial de pedidos</Link>
               </MenuItem>
               <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+                <Link href={`/userPosts/${user.id}`}>Mis publicaciones</Link>
+              </MenuItem>
+              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
                 Perfil
               </MenuItem>
               <MenuItem

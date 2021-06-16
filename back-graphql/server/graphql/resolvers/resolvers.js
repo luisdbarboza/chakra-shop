@@ -110,6 +110,9 @@ module.exports = {
 
       return results;
     },
+    posts: async (_, { sellerId }) => {
+      return Product.find({ seller: sellerId });
+    },
   },
   Mutation: {
     addUser: async (_, { name, email, password, profilePhoto = "" }) => {

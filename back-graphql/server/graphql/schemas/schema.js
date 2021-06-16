@@ -83,6 +83,7 @@ module.exports = `
         categories: [Category]
         login(email: String!, password: String!): LogIn
         search(filters: String!): [Product]
+        posts(sellerId: ID!): [Product]
     }
 
     type Mutation {

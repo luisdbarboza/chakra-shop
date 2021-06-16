@@ -74,11 +74,20 @@ const addOrder = gql`
   }
 `;
 
+const removeProduct = gql`
+  mutation ($id: ID!) {
+    removeProduct(id: $id) {
+      id
+    }
+  }
+`;
+
 export {
   addUserMutation,
   addUserReview,
   addProductMutation,
   addOrder,
   addItemToCart,
+  removeProduct,
   removeProductFromCart,
 };
