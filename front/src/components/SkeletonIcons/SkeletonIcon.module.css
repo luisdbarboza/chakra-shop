@@ -1,0 +1,33 @@
+.graphic {
+  fill: #bfbfbf;
+}
+
+.afterElement {
+  content: "";
+  position: relative;
+  top: -100%;
+  left: calc(
+    50% - 72px * 2 - 72px / 2
+  ); /*BASICAMENTE ESTO MUEVE LA CAPA SUPERIOR A LA IZQUIERDA*/
+  display: block;
+  width: calc(72px * 3);
+  height: 100%;
+  background: linear-gradient(
+    /*LA CAPA TRANSPARENTE DEL MEDIO RESALTA EL COLOR DE LA CAPA INFERIOR*/ to
+      right,
+    rgba(240, 240, 240, 0.5) 0,
+    rgba(240, 240, 240, 0.5) 33.33%,
+    rgba(240, 240, 240, 0) 44.1%,
+    rgba(240, 240, 240, 0) 55.8%,
+    rgba(240, 240, 240, 0.5) 66.66%,
+    rgba(240, 240, 240, 0.5) 100%
+  );
+  opacity: 1;
+  animation: cubierta 1.5s linear 0.6s infinite;
+}
+
+@keyframes cubierta {
+  100% {
+    left: 0; /*ANIMA LA CAPA SUPERIOR MOVIENDOLA A LA DERECHA*/
+  }
+}

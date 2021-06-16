@@ -1,0 +1,131 @@
+//crea un usuario
+mutation{
+  addUser(name: "luis", email:"lbarbozanav@gmail.com", password: "12345", profilePhoto: "NaN1532dd70-379d-46d3-9a88-e30a5f3e8f02.png") {
+    ok
+    message
+  }
+}
+
+//inicia sesion
+{
+  login (email: "lbarbozanav@gmail.com", password:"12345"){
+    user {
+      id
+      name
+      email
+      profilePhoto
+      cart {
+        id
+      }
+    }
+    token
+    status {
+      ok
+      message
+    }
+  }
+}
+
+// buscar un producto con filtros
+{
+	search(filters: "{\"text\":\"fi\",\"category\":null,\"range\":null}") {
+		name
+    price
+    averageRating
+    reviewsCount
+    mainImage
+    reviews {
+      id
+      author {
+        id
+        name
+      }
+    }
+  }
+}
+
+//agrega un producto
+mutation {
+	addProduct(name:"1984", category: "60c129056f6fdb18631c8579", price: 12, quantity: 25, description: "Orwell's Dystopian masterpiece", seller: "60c6978da1cf4b3bc47ab4ab", images: "[\"NaN634ab847-134e-4271-ab6e-af60bfb5a4de.jpeg\",\"NaN9ee71c02-6f42-4541-ac6e-c8914c4c39ec.jpg\"]") {
+	  id
+    name
+    images
+	}
+}
+
+//sube imagen referencial del producto
+
+// obtener la info de rodos los productos
+{
+	products {
+    id
+    name
+    price
+    mainImage
+    averageRating
+    reviewsCount
+    seller {
+      id
+      name
+    }
+  }
+}
+
+//o esta
+{
+	product(id: "60c193cf56a8201faf92cc40"){
+    id
+    name
+    price
+    mainImage
+    description
+    images
+    status
+    quantity
+    averageRating
+    reviewsCount
+    seller {
+      id
+      name
+    }
+    reviews {
+      id
+      author {
+        id
+        name
+      }
+      text
+      date
+    }
+  }
+}
+
+//Agregar una review a un producto
+mutation {
+	addReview(authorId: "60ba9d22caf94a0816381057", productId: "60c193cf56a8201faf92cc40", rating: 4, text: "Best RPG EVER") {
+    message
+  }
+}
+
+//agregar un item al carrito de compra
+mutation {
+  addItemToCart(userId: "60c1982856a8201faf92cc42", productId: "60c193cf56a8201faf92cc40", quantity: 2) {
+    message
+  }
+}
+
+//quitar productos del carrito
+mutation {
+  removeProductFromCart(userId: "60c1982856a8201faf92cc42", productId: "60c47c100c981e10325bc009") {
+    ok
+    message
+  }
+}
+
+//Agrega un pedido del carrito al historial de pedidos de un usuario
+mutation {
+	addOrder(order: "{\"address\":\"San jacinto\",\"city\":\"Maracaibo\",\"country\":\"Venezuela\",\"fullName\":\"Luis\",\"totalAmount\":180,\"totalItems\":6,\"userId\":\"60c6a927b160b5082514be60\",\"items\":[{\"item\":\"60c6a67c954419455f909541\",\"quantity\":6}]}") {
+    ok
+    message
+  }
+}
