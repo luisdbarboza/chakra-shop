@@ -8,6 +8,7 @@ import {Modal} from "@codecraftkit/core";
 import {useQuery, useMutation} from "@apollo/client";
 import {removeProduct} from "graphql/mutations";
 import Swal from "sweetalert2";
+import {isEmpty} from "helpers/helpers";
 //import {useRouter} from "next/router";
 import {
   Grid,
@@ -27,8 +28,8 @@ import {
 } from "@chakra-ui/react";
 
 
-import { Form, Formik } from "formik";
-import { FormField } from "@codecraftkit/formfield";
+import {Form, Formik} from "formik";
+import {FormField} from "@codecraftkit/formfield";
 
 
 function userPosts() {
@@ -46,12 +47,6 @@ function userPosts() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedMode, setSelectedMode] = useState(null);
   const actions = (row) => [
-    {
-      color: "teal",
-      label: "Detalles",
-      icon: <FaEye />,
-      isLink: {route: `/products`},
-    },
     {
       color: "blue",
       label: "Editar",
@@ -81,18 +76,21 @@ function userPosts() {
         color="white"
         mr="1rem"
         onClick={() => {
-          removeMutate({
-            variables: {
-              id: selectedProduct._id,
-            },
-            refetchQueries: [
-              {
-                query: getUserPosts,
-                variables: {sellerId: user.id}
-              }
-            ],
-          });
-
+          try {
+            removeMutate({
+              variables: {
+                id: selectedProduct._id,
+              },
+              refetchQueries: [
+                {
+                  query: getUserPosts,
+                  variables: {sellerId: user.id}
+                }
+              ],
+            });
+          } catch(err) {
+            console.log(err);
+          }
           onClose();
         }}
       >
@@ -104,60 +102,60 @@ function userPosts() {
     </Flex>
   );
 
- const EditView = () => (
-  <Formik
-    initialValues={{
-      name: "",
-      price: 0,
-      description: "",
-      quantity: 1,
-      category: "",
-      images: [],
-    }}
-    validate={({ name, price, description, quantity, category }) => {
-      const errors = {};
+  const EditView = () => (
+    <Formik
+      initialValues={{
+        name: selectedProduct.name,
+        price: selectedProduct.price,
+        description: selectedProduct.description,
+        quantity: selectedProduct.quantity,
+        category: selectedProduct.category,
+        images: selectedProduct.images,
+      }}
+      validate={({name, price, description, quantity, category}) => {
+        const errors = {};
 
-      if (isEmpty(name)) errors.name = "El campo nombre es obligatorio";
-      if (isEmpty(description))
-        errors.description = "Es necesaria una descripcion del producto";
-      if (Number(price) <= 0) errors.price = "Precio invalido";
-      if (Number(quantity) <= 0) errors.quantity = "Cantidad invalida";
-      if (category === "")
-        errors.category = "Debes escoger una categoria";
+        if (isEmpty(name)) errors.name = "El campo nombre es obligatorio";
+        if (isEmpty(description))
+          errors.description = "Es necesaria una descripcion del producto";
+        if (Number(price) <= 0) errors.price = "Precio invalido";
+        if (Number(quantity) <= 0) errors.quantity = "Cantidad invalida";
+        if (category === "")
+          errors.category = "Debes escoger una categoria";
 
-      return errors;
-    }}
-    onSubmit={async (
-      { name, price, description, quantity, category, images },
-      { setSubmitting, resetForm }
-    ) => {
-    }}
-  >
-    {({ isSubmitting }) => (
-      <Form>
-        <Heading as="h2">Registra un producto</Heading>
-        <FormControl mt="1rem">
-          <FormField label="Nombre" name="name" required type="text" />
-        </FormControl>
-        <FormControl mt="1rem">
-          <FormField type="number" name="price" label="Precio:" min={0} />
-        </FormControl>
-        <FormControl mt="1rem">
-          <FormField
-            type="textarea"
-            name="description"
-            label="Descripcion"
-          />
-        </FormControl>
-        <FormControl mt="1rem">
-          <FormField
-            type="number"
-            name="quantity"
-            label="Cantidad:"
-            min={0}
-          />
-        </FormControl>
-        {/*<FormControl mt="1rem">
+        return errors;
+      }}
+      onSubmit={async (
+        {name, price, description, quantity, category, images},
+        {setSubmitting, resetForm}
+      ) => {
+      }}
+    >
+      {({isSubmitting}) => (
+        <Form>
+          <Heading as="h2">Editar</Heading>
+          <FormControl mt="1rem">
+            <FormField label="Nombre" name="name" required type="text" />
+          </FormControl>
+          <FormControl mt="1rem">
+            <FormField type="number" name="price" label="Precio:" min={0} />
+          </FormControl>
+          <FormControl mt="1rem">
+            <FormField
+              type="textarea"
+              name="description"
+              label="Descripcion"
+            />
+          </FormControl>
+          <FormControl mt="1rem">
+            <FormField
+              type="number"
+              name="quantity"
+              label="Cantidad:"
+              min={0}
+            />
+          </FormControl>
+          {/*<FormControl mt="1rem">
           <FormField
             type="select"
             name="category"
@@ -166,31 +164,31 @@ function userPosts() {
             data={categories}
           />
         </FormControl>*/}
-        <FormControl mt="1rem">
-          <FormField
-            type="image"
-            height="200px"
-            name="images"
-            label="Imagenes referenciales"
-            placeholder="Selecciona imagenes"
-            multiple
+          <FormControl mt="1rem">
+            <FormField
+              type="image"
+              height="200px"
+              name="images"
+              label="Imagenes referenciales"
+              placeholder="Selecciona imagenes"
+              multiple
             //stackImages
-          />
-        </FormControl>
-        <Button
-          mt="1rem"
-          type="submit"
-          disabled={isSubmitting}
-          bg="#F0C040"
-          color="black"
-          w="100%"
-        >
-          Enviar
-        </Button>
-      </Form>
-    )}
-  </Formik>
- );
+            />
+          </FormControl>
+          <Button
+            mt="1rem"
+            type="submit"
+            disabled={isSubmitting}
+            bg="#F0C040"
+            color="black"
+            w="100%"
+          >
+            Enviar
+          </Button>
+        </Form>
+      )}
+    </Formik>
+  );
 
   //verifica si los datos de una eliminacion son correctos
   useEffect(async () => {
@@ -233,7 +231,7 @@ function userPosts() {
           <Grid
             h={!selectedMode ? "500px" : selectedMode === "Delete" ? "200px" : selectedMode === "Edit" && "max-content"}
           >
-            {selectedMode === "Delete" ? <DeleteView /> : selectedMode === "Edit" ? <EditView /> :  <div>-_-</div>}
+            {selectedMode === "Delete" ? <DeleteView /> : selectedMode === "Edit" ? <EditView /> : <div>-_-</div>}
           </Grid>
         }
         closeOnOverlayClick={false}

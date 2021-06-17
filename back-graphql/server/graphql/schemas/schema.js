@@ -105,6 +105,15 @@ module.exports = `
             category: ID
             images: String
         ):Product
+        updateProduct(
+            id: ID
+            name: String
+            price: Float
+            quantity: Int
+            description: String
+            category: ID
+            images: String
+        ):Notification
         addReview(
             authorId: ID
             productId: ID

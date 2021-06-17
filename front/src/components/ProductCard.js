@@ -1,15 +1,25 @@
+import {useState, useEffect, useContext} from "react";
 import {
   Box,
-  Heading,
-  Text,
+  Button,
   Image,
   Grid,
   GridItem,
   Flex,
   Link,
+  useDisclosure
 } from "@chakra-ui/react";
-import { SERVER_URL } from "../constants/constants";
+import Swal from "sweetalert2";
+
+import {useQuery, useMutation} from "@apollo/client";
+import {AuthContext} from "context/AuthContext";
+import {SERVER_URL} from "../constants/constants";
 import StarRatingRow from "./StarRatingRow";
+import {addItemToCart} from "graphql/mutations";
+import {getUserCartInfo} from "graphql/queries";
+
+import {Modal} from "@codecraftkit/core";
+import ProductContainer from "containers/Product";
 
 function ProductCard({
   name,
@@ -20,13 +30,57 @@ function ProductCard({
   reviewsCount,
   averageRating,
 }) {
+  const {user} = useContext(AuthContext);
+  const {isOpen, onOpen, onClose} = useDisclosure();
+  const [mutate, mutationData] = useMutation(addItemToCart);
+  const {data} = useQuery(getUserCartInfo, {
+    variables: {
+      id: user.id,
+    },
+  });
   const imgPath = mainImage
     ? `${SERVER_URL}/images/products/${mainImage}`
     : "/images/placeholder.png";
 
+  const handleCartUpdate = () => {
+    mutate({
+      variables: {
+        userId: user.id,
+        productId: id,
+        quantity: 1,
+      },
+      refetchQueries: [{query: getUserCartInfo, variables: {id: user.id}}],
+    });
+  };
+
+  useEffect(async () => {
+    if (
+      !mutationData.loading &&
+      mutationData.data &&
+      mutationData.data.addItemToCart.ok
+    ) {
+      await Swal.fire({
+        icon: "success",
+        text: mutationData.data.addItemToCart.message,
+      });
+
+      mutationData.data.addItemToCart.ok = false;
+    }
+  }, [mutationData]);
+
+  const isOnCartAlready =
+    !user.loggedIn || !data || !data.user
+      ? false
+      : data.user.cart.some((cartProduct) => {
+        return cartProduct.item.id === id;
+      });
+
   return (
-    <Link href={`/products/${id}`}>
-      <Box borderWidth="1px" borderRadius="lg" h="500px">
+    <>
+      <Box borderWidth="1px" borderRadius="lg" h="500px"
+        _hover={{boxShadow: "0px 0px 5px gray", cursor: "pointer"}}
+        onClick={() => onOpen()}
+      >
         <Flex
           justify="center"
           align="center"
@@ -39,7 +93,7 @@ function ProductCard({
             src={imgPath}
             alt={`${name} cover`}
             h="100%"
-            style={{ objectFit: "cover" }}
+            style={{objectFit: "cover"}}
             borderRadius="5px"
           />
         </Flex>
@@ -49,27 +103,45 @@ function ProductCard({
               colSpan={2}
               color="blue"
               fontWeight="bold"
-              _hover={{ color: "orange", cursor: "pointer" }}
+              _hover={{color: "orange", cursor: "pointer"}}
             >
               {name}
             </GridItem>
-            <GridItem colSpan={2}>
+            <GridItem colSpan={1}>
               <StarRatingRow
                 numberOfStars={5}
                 checked={Math.floor(averageRating)}
               />
               <span>{reviewsCount} Resenas</span>
             </GridItem>
-            <GridItem colSpan={1} fontWeight="bold">
+            {user.loggedIn && user.id !== seller.id && !isOnCartAlready && (
+              <GridItem colSpan={1}>
+                <Box
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleCartUpdate();
+                  }}
+                  _hover={{textDecoration: "underline", color: "orange"}}
+                >Agregar al carrito</Box>
+              </GridItem>
+            )}
+            <GridItem gridColumn="2/-1" fontWeight="bold">
               ${price}
             </GridItem>
-            <GridItem colSpan={1} style={{ justifySelf: "end" }}>
+            <GridItem gridColumn="2/-1" style={{justifySelf: "end"}}>
               <Box>{seller.name}</Box>
             </GridItem>
           </Grid>
         </Box>
       </Box>
-    </Link>
+      <Modal
+        boxSize="95%"
+        body={<ProductContainer id={id} />}
+        closeOnOverlayClick={false}
+        onOpen={onOpen}
+        isOpen={isOpen}
+        onClose={onClose} />
+    </>
   );
 }
 

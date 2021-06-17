@@ -55,8 +55,6 @@ const Drawer = React.memo(() => {
                 {data.categories.map((category, index) => {
                   return (
                     <Box mb="1rem" key={index}>
-                      <Link href={`/search?category=${category.id}`}>
-                        <a>
                           <Flex align="center">
                             <Box
                               _hover={{
@@ -73,8 +71,6 @@ const Drawer = React.memo(() => {
                               icon={<RiArrowRightSLine />}
                             />
                           </Flex>
-                        </a>
-                      </Link>
                     </Box>
                   );
                 })}
