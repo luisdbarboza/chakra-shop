@@ -23,14 +23,12 @@ import { addProductMutation } from "graphql/mutations";
 import { getAllCategories, getAllProducts } from "graphql/queries";
 
 import { isEmpty } from "helpers/helpers";
-import { useRouter } from "next/router";
 
 import { Form, Formik } from "formik";
 import { FormField } from "@codecraftkit/formfield";
 
 const AddProductForm = () => {
   const [categories, setCategories] = useState([]);
-  const router = useRouter();
   const { data: categoryData, loading } = useQuery(getAllCategories);
   const [mutate, { data }] = useMutation(addProductMutation);
   const { user, dispatchUser } = useContext(AuthContext);
@@ -55,10 +53,6 @@ const AddProductForm = () => {
       });
     }
   }, [data]);
-
-  useEffect(() => {
-    if (!user.loggedIn) router.push("/");
-  }, []);
 
   return (
     <Box m="2rem">

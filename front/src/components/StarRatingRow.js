@@ -1,7 +1,7 @@
-import { Box, HStack } from "@chakra-ui/react";
-import { FaStar } from "react-icons/fa";
+import {Box, HStack} from "@chakra-ui/react";
+import {FaStar} from "react-icons/fa";
 
-const StarRatingRow = ({ numberOfStars, checked }) => {
+const StarRatingRow = ({numberOfStars, checked}) => {
   const stars = [];
 
   for (let i = 0; i < numberOfStars; i++) {
@@ -14,13 +14,11 @@ const StarRatingRow = ({ numberOfStars, checked }) => {
   }
 
   return (
-    <Box>
-      <HStack>
-        {stars.map((star, index) => (
-          <span key={index}>{star}</span>
-        ))}
-      </HStack>
-    </Box>
+    <HStack>
+      {stars.map((star, index) => (
+        <span key={index}>{star}</span>
+      ))}
+    </HStack>
   );
 };
 

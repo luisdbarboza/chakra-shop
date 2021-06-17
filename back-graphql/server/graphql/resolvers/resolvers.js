@@ -3,22 +3,22 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/users");
 const Product = require("../../models/products");
 const Category = require("../../models/categories");
-const { respondWithErrorMessage } = require("../../helpers/helpers");
+const {respondWithErrorMessage} = require("../../helpers/helpers");
 
 module.exports = {
   Query: {
-    user: (_, { id }) => User.findById(id),
-    product: (_, { id }) => Product.findById(id),
-    category: (_, { id }) => Category.findById(id),
-    order: async (_, { id }) => {
-      let user = await User.findOne({ "orders._id": id });
+    user: (_, {id}) => User.findById(id),
+    product: (_, {id}) => Product.findById(id),
+    category: (_, {id}) => Category.findById(id),
+    order: async (_, {id}) => {
+      let user = await User.findOne({"orders._id": id});
 
       return user.orders.filter((order) => order.id === id)[0];
     },
     users: () => User.find({}),
     products: () => Product.find({}),
     categories: () => Category.find({}),
-    login: async (parent, { email, password }) => {
+    login: async (parent, {email, password}) => {
       const errorObject = {
         status: {
           ok: false,
@@ -26,7 +26,7 @@ module.exports = {
         },
       };
 
-      const foundUser = await User.findOne({ email });
+      const foundUser = await User.findOne({email});
 
       if (foundUser) {
         const arePaswordsTheSame = await bcrypt.compare(
@@ -60,69 +60,52 @@ module.exports = {
         return errorObject;
       }
     },
-    search: async (parent, { filters }) => {
-      const filter = JSON.parse(filters);
-      let filterCount = 0;
-      const search = {};
+    search: async (parent, {filters}) => {
+      const query = {};
+      let {name, category, range, minStarRating} = JSON.parse(filters);
 
-      if (filter.name && filter.name.length > 0) {
-        search.name = new RegExp(filter.name, "i");
-        filterCount++;
+      if (name) {
+        query.name = new RegExp(name, "i"); 
+      }
+      if (category) {
+        query.category = category;
+      }
+      if (range) {
+        range = JSON.parse(range);
+        query.price = {$gte: range[0], $lte: range[1]};
       }
 
-      if (filter.category) {
-        search.category = filter.category;
-        filterCount++;
+      console.log(query)
+
+      if (minStarRating) {
+        let products = await Product.find(query);
+
+        products.forEach((product, index) => {
+          let sum = product.reviews.reduce((sum, review) => {
+            return sum + review.rating;
+          }, 0);
+
+          product.averageRating = product.reviews.length === 0 ? 0 : Math.floor(sum / product.reviews.length);
+        });
+
+        return products.filter(product => product.averageRating >= minStarRating);
+      } else {
+        return await Product.find(query);
       }
-
-      if (filter.range) {
-        filter.range = JSON.parse(filter.range);
-
-        search.price = {
-          $gte: filter.range[0],
-          $lte: filter.range[1],
-        };
-        filterCount++;
-      }
-
-      if (filter.minStarRating) {
-        // search.reviews = { rating: { $gte: filter.minStarRating } };
-        // filterCount++;
-      }
-
-      let query = {
-        $or: [
-          {
-            name: search.name ? search.name : null,
-          },
-          {
-            category: search.category ? search.category : null,
-          },
-          {
-            price: search.price ? search.price : null,
-          },
-        ],
-      };
-
-      if (filterCount === 0) query = {};
-
-      const results = await Product.find(query);
-
-      return results;
     },
-    posts: async (_, { sellerId }) => {
-      return Product.find({ seller: sellerId });
+    posts: async (_, {sellerId}) => {
+      return Product.find({seller: sellerId});
     },
   },
   Mutation: {
-    addUser: async (_, { name, email, password, profilePhoto = "" }) => {
+    addUser: async (_, {name, email, password, profilePhoto = ""}) => {
       const customError = "Error, un usuario con ese email ya tiene cuenta";
 
       try {
         const saltRounds = 10;
         let hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        const found = await User.find({ email });
+        const found = await User.find({email});
 
         if (found.length === 0) {
           const user = new User({
@@ -148,7 +131,7 @@ module.exports = {
         };
       }
     },
-    addCategory: async (_, { name }) => {
+    addCategory: async (_, {name}) => {
       try {
         const category = new Category({
           name,
@@ -161,7 +144,7 @@ module.exports = {
     },
     addProduct: async (
       _,
-      { name, price, quantity, description, seller, category, images }
+      {name, price, quantity, description, seller, category, images}
     ) => {
       const product = new Product({
         name: name,
@@ -174,40 +157,40 @@ module.exports = {
       });
 
       await Category.update(
-        { _id: category },
-        { $push: { products: product._id } }
+        {_id: category},
+        {$push: {products: product._id}}
       );
 
       return product.save();
     },
-    addReview: async (_, { authorId, productId, rating, text }) => {
+    addReview: async (_, {authorId, productId, rating, text}) => {
       let review = {
         author: authorId,
         rating: rating,
         text: text,
       };
 
-      await Product.update({ _id: productId }, { $push: { reviews: review } });
+      await Product.update({_id: productId}, {$push: {reviews: review}});
 
       return {
         ok: true,
         message: "Review agregada",
       };
     },
-    addItemToCart: async (_, { userId, productId, quantity }) => {
+    addItemToCart: async (_, {userId, productId, quantity}) => {
       let cartItem = {
         item: productId,
         quantity: quantity,
       };
 
-      await User.update({ _id: userId }, { $push: { cart: cartItem } });
+      await User.update({_id: userId}, {$push: {cart: cartItem}});
 
       return {
         ok: true,
         message: "Item agregado al carrito",
       };
     },
-    addOrder: async (_, { order }) => {
+    addOrder: async (_, {order}) => {
       order = JSON.parse(order);
       order.date = Date.now();
 
@@ -219,8 +202,8 @@ module.exports = {
 
       order.items.forEach(async (item, index) => {
         await Product.updateOne(
-          { _id: item.item },
-          { $inc: { quantity: item.quantity * -1 } }
+          {_id: item.item},
+          {$inc: {quantity: item.quantity * -1}}
         );
       });
 
@@ -233,25 +216,25 @@ module.exports = {
         message: "Pedido agregado",
       };
     },
-    removeUser: async (_, { id }) => {
+    removeUser: async (_, {id}) => {
       return User.findByIdAndRemove(id);
     },
-    removeCategory: async (_, { id }) => {
-      await Category.deleteOne({ _id: id });
-      await Product.deleteMany({ category: id });
+    removeCategory: async (_, {id}) => {
+      await Category.deleteOne({_id: id});
+      await Product.deleteMany({category: id});
 
       return {
         ok: true,
         message: "Categoria borrada",
       };
     },
-    removeProduct: (parent, { id }) => {
+    removeProduct: (parent, {id}) => {
       return Product.findByIdAndRemove(id);
     },
-    removeProductFromCart: async (parent, { userId, productId }) => {
+    removeProductFromCart: async (parent, {userId, productId}) => {
       await User.updateOne(
-        { _id: userId },
-        { $pull: { cart: { item: productId } } }
+        {_id: userId},
+        {$pull: {cart: {item: productId}}}
       );
 
       return {
@@ -278,7 +261,7 @@ module.exports = {
   },
   Category: {
     products: (parent, args) => {
-      return Product.find({ category: parent.id });
+      return Product.find({category: parent.id});
     },
   },
   Review: {

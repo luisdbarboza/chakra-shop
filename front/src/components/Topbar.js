@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, {useContext, useState} from "react";
 import Link from "next/link";
 import {
   Box,
@@ -13,19 +13,13 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
-  MenuIcon,
-  MenuCommand,
-  MenuDivider,
 } from "@chakra-ui/react";
-import { DrawerContext } from "../containers/NavigationBar";
-import { AuthContext } from "../context/AuthContext";
-import { AiOutlineMenu, AiOutlineSearch } from "react-icons/ai";
+import {DrawerContext} from "../containers/NavigationBar";
+import {AuthContext} from "../context/AuthContext";
+import {AiOutlineMenu, AiOutlineSearch} from "react-icons/ai";
 
 const MenuButtonAndLogo = () => {
-  const { dispatchDrawerState } = useContext(DrawerContext);
+  const {dispatchDrawerState} = useContext(DrawerContext);
 
   return (
     <Center>
@@ -33,11 +27,11 @@ const MenuButtonAndLogo = () => {
         <HStack>
           <Button
             colorScheme="#131921"
-            onClick={() => dispatchDrawerState({ type: "TOGGLE_DRAWER" })}
+            onClick={() => dispatchDrawerState({type: "TOGGLE_DRAWER"})}
           >
-            <AiOutlineMenu style={{ color: "white", fontSize: "2rem" }} />
+            <AiOutlineMenu style={{color: "white", fontSize: "2rem"}} />
           </Button>
-          <Box p="0.5rem" fontSize={{ base: "1rem", md: "1.2rem" }}>
+          <Box p="0.5rem" fontSize={{base: "1rem", md: "1.2rem"}}>
             <Link href="/">
               <a>ChakraShop</a>
             </Link>
@@ -51,42 +45,17 @@ const MenuButtonAndLogo = () => {
 const SearchButton = () => {
   return (
     <Button bg="#F0C040">
-      <AiOutlineSearch style={{ color: "black", fontSize: "10rem" }} />
+      <AiOutlineSearch style={{color: "black", fontSize: "10rem"}} />
     </Button>
   );
 };
 
-const SearchBar = () => {
-  const [search, setSearch] = useState("");
-  const handleChange = (event) => setSearch(event.target.value);
-
-  return (
-    <Center>
-      <HStack>
-        <InputGroup>
-          <Input
-            color="black"
-            bg="white"
-            value={search}
-            onChange={handleChange}
-          />
-          <Link
-            href={search.length > 0 ? `/search?search=${search}` : "/search"}
-          >
-            <InputRightElement w="3rem" children={<SearchButton />} />
-          </Link>
-        </InputGroup>
-      </HStack>
-    </Center>
-  );
-};
-
 const UserOptions = () => {
-  const { user, dispatchUser } = useContext(AuthContext);
+  const {user, dispatchUser} = useContext(AuthContext);
 
   return (
     <Center>
-      <Box color="white" _hover={{ cursor: "pointer" }}>
+      <Box color="white" _hover={{cursor: "pointer"}}>
         {!user.loggedIn ? (
           <Link href="/login">
             <a>Iniciar Sesion</a>
@@ -95,25 +64,25 @@ const UserOptions = () => {
           <Menu>
             <MenuButton>{user.name}</MenuButton>
             <MenuList bg="#131921">
-              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+              <MenuItem _hover={{backgroundColor: "skyblue", color: "black"}}>
                 <Link href={`/cart/${user.id}`}>Mi carrito</Link>
               </MenuItem>
-              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+              <MenuItem _hover={{backgroundColor: "skyblue", color: "black"}}>
                 <Link href={`/addProduct`}>Registrar producto</Link>
               </MenuItem>
-              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+              <MenuItem _hover={{backgroundColor: "skyblue", color: "black"}}>
                 <Link href={`/orderHistory`}>Historial de pedidos</Link>
               </MenuItem>
-              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+              <MenuItem _hover={{backgroundColor: "skyblue", color: "black"}}>
                 <Link href={`/userPosts/${user.id}`}>Mis publicaciones</Link>
               </MenuItem>
-              <MenuItem _hover={{ backgroundColor: "skyblue", color: "black" }}>
+              <MenuItem _hover={{backgroundColor: "skyblue", color: "black"}}>
                 Perfil
               </MenuItem>
               <MenuItem
-                _hover={{ backgroundColor: "skyblue", color: "black" }}
+                _hover={{backgroundColor: "skyblue", color: "black"}}
                 onClick={() => {
-                  dispatchUser({ type: "LOG_OUT" });
+                  dispatchUser({type: "LOG_OUT"});
                 }}
               >
                 Salir
@@ -138,7 +107,6 @@ const Topbar = React.memo(() => {
     >
       <Flex justify="space-between" wrap="wrap">
         <MenuButtonAndLogo />
-        <SearchBar />
         <UserOptions />
       </Flex>
     </Box>

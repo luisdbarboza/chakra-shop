@@ -8,7 +8,7 @@ function SearchResults({ data }) {
       gap="1rem"
       mt="1rem"
     >
-      {data.search.map((product, index) => {
+      {data.map((product, index) => {
         return (
           <ProductCard
             key={index}

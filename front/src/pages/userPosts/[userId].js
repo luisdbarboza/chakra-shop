@@ -1,24 +1,42 @@
-import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "context/AuthContext";
-import { getUserPosts } from "graphql/queries";
-import { Table } from "@codecraftkit/core";
-import { Box, Grid, Flex, Button } from "@chakra-ui/react";
-import { MdDelete } from "react-icons/md";
-import { FaRegEdit, FaEye } from "react-icons/fa";
-import { useDisclosure } from "@chakra-ui/react";
-import { Modal } from "@codecraftkit/core";
-import { useQuery, useMutation } from "@apollo/client";
-import { useRouter } from "next/router";
-import { removeProduct } from "graphql/mutations";
+import {useState, useEffect, useContext} from "react";
+import {AuthContext} from "context/AuthContext";
+import {getUserPosts} from "graphql/queries";
+import {Table} from "@codecraftkit/core";
+import {MdDelete} from "react-icons/md";
+import {FaRegEdit, FaEye} from "react-icons/fa";
+import {Modal} from "@codecraftkit/core";
+import {useQuery, useMutation} from "@apollo/client";
+import {removeProduct} from "graphql/mutations";
 import Swal from "sweetalert2";
-// import { getAllCategories, getAllProducts } from "graphql/queries";
+//import {useRouter} from "next/router";
+import {
+  Grid,
+  GridItem,
+  Heading,
+  Flex,
+  Box,
+  Input,
+  Button,
+  Link,
+  Textarea,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Select,
+  useDisclosure
+} from "@chakra-ui/react";
+
+
+import { Form, Formik } from "formik";
+import { FormField } from "@codecraftkit/formfield";
+
 
 function userPosts() {
-  const [removeMutate, { data: removeData }] = useMutation(removeProduct);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const router = useRouter();
-  const { user } = useContext(AuthContext);
-  const { data: postsData, loading } = useQuery(getUserPosts, {
+  const [removeMutate, {data: removeData}] = useMutation(removeProduct);
+  const {isOpen, onOpen, onClose} = useDisclosure();
+  //const router = useRouter();
+  const {user} = useContext(AuthContext);
+  const {data: postsData, loading} = useQuery(getUserPosts, {
     variables: {
       sellerId: user.id,
     },
@@ -32,19 +50,23 @@ function userPosts() {
       color: "teal",
       label: "Detalles",
       icon: <FaEye />,
-      isLink: { route: `/products` },
+      isLink: {route: `/products`},
     },
     {
       color: "blue",
       label: "Editar",
       icon: <FaRegEdit />,
-      handler: (user) => alert("edit " + user.name),
+      handler: (user) => {
+        setSelectedProduct(row);
+        setSelectedMode("Edit");
+        onOpen();
+      },
     },
     {
       color: "red",
       label: "Borrar",
       icon: <MdDelete />,
-      handler: (user) => {
+      handler: () => {
         setSelectedProduct(row);
         setSelectedMode("Delete");
         onOpen();
@@ -63,8 +85,15 @@ function userPosts() {
             variables: {
               id: selectedProduct._id,
             },
-            refetchQueries: [{ query: getUserPosts }],
+            refetchQueries: [
+              {
+                query: getUserPosts,
+                variables: {sellerId: user.id}
+              }
+            ],
           });
+
+          onClose();
         }}
       >
         Borrar
@@ -74,6 +103,94 @@ function userPosts() {
       </Button>
     </Flex>
   );
+
+ const EditView = () => (
+  <Formik
+    initialValues={{
+      name: "",
+      price: 0,
+      description: "",
+      quantity: 1,
+      category: "",
+      images: [],
+    }}
+    validate={({ name, price, description, quantity, category }) => {
+      const errors = {};
+
+      if (isEmpty(name)) errors.name = "El campo nombre es obligatorio";
+      if (isEmpty(description))
+        errors.description = "Es necesaria una descripcion del producto";
+      if (Number(price) <= 0) errors.price = "Precio invalido";
+      if (Number(quantity) <= 0) errors.quantity = "Cantidad invalida";
+      if (category === "")
+        errors.category = "Debes escoger una categoria";
+
+      return errors;
+    }}
+    onSubmit={async (
+      { name, price, description, quantity, category, images },
+      { setSubmitting, resetForm }
+    ) => {
+    }}
+  >
+    {({ isSubmitting }) => (
+      <Form>
+        <Heading as="h2">Registra un producto</Heading>
+        <FormControl mt="1rem">
+          <FormField label="Nombre" name="name" required type="text" />
+        </FormControl>
+        <FormControl mt="1rem">
+          <FormField type="number" name="price" label="Precio:" min={0} />
+        </FormControl>
+        <FormControl mt="1rem">
+          <FormField
+            type="textarea"
+            name="description"
+            label="Descripcion"
+          />
+        </FormControl>
+        <FormControl mt="1rem">
+          <FormField
+            type="number"
+            name="quantity"
+            label="Cantidad:"
+            min={0}
+          />
+        </FormControl>
+        {/*<FormControl mt="1rem">
+          <FormField
+            type="select"
+            name="category"
+            label="Categoria"
+            placeholder="Selecciona una categoria"
+            data={categories}
+          />
+        </FormControl>*/}
+        <FormControl mt="1rem">
+          <FormField
+            type="image"
+            height="200px"
+            name="images"
+            label="Imagenes referenciales"
+            placeholder="Selecciona imagenes"
+            multiple
+            //stackImages
+          />
+        </FormControl>
+        <Button
+          mt="1rem"
+          type="submit"
+          disabled={isSubmitting}
+          bg="#F0C040"
+          color="black"
+          w="100%"
+        >
+          Enviar
+        </Button>
+      </Form>
+    )}
+  </Formik>
+ );
 
   //verifica si los datos de una eliminacion son correctos
   useEffect(async () => {
@@ -87,9 +204,7 @@ function userPosts() {
 
   useEffect(() => {
     const newList = [];
-    if (!user.loggedIn) {
-      router.push("/login");
-    } else if (!loading && list.length === 0) {
+    if (!loading && list.length === 0) {
       postsData.posts.forEach((post) => {
         newList.push({
           _id: post.id,
@@ -109,16 +224,16 @@ function userPosts() {
       <Table list={list} head={head} actionsWithRow={actions} />
       <Modal
         title={
-          selectedProduct
+          selectedMode === "Delete"
             ? `Estas seguro de borrar ${selectedProduct.name}?`
-            : "Modal title"
+            : ""
         }
         buttonText="New"
         body={
           <Grid
-            h={!selectedMode ? "500px" : selectedMode === "Delete" && "200px"}
+            h={!selectedMode ? "500px" : selectedMode === "Delete" ? "200px" : selectedMode === "Edit" && "max-content"}
           >
-            {selectedMode === "Delete" ? <DeleteView /> : <div>-_-</div>}
+            {selectedMode === "Delete" ? <DeleteView /> : selectedMode === "Edit" ? <EditView /> :  <div>-_-</div>}
           </Grid>
         }
         closeOnOverlayClick={false}
