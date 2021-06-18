@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 const addUserMutation = gql`
   mutation ($name: String!, $email: String!, $password: String!) {
@@ -47,6 +47,15 @@ const addProductMutation = gql`
   }
 `;
 
+const updateProduct = gql`
+  mutation ($id: ID!, $data: String!) {
+    updateProduct(id: $id, data: $data) {
+      ok
+      message
+    }
+  }
+`;
+
 const addItemToCart = gql`
   mutation ($userId: ID!, $productId: ID!, $quantity: Int!) {
     addItemToCart(userId: $userId, productId: $productId, quantity: $quantity) {
@@ -88,6 +97,7 @@ export {
   addProductMutation,
   addOrder,
   addItemToCart,
+  updateProduct,
   removeProduct,
   removeProductFromCart,
 };

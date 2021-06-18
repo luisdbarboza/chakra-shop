@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/users");
 const Product = require("../../models/products");
 const Category = require("../../models/categories");
-const {respondWithErrorMessage} = require("../../helpers/helpers");
+
+const {deleteFile} = require("../../helpers/helpers");
 
 module.exports = {
   Query: {
@@ -65,7 +66,7 @@ module.exports = {
       let {name, category, range, minStarRating} = JSON.parse(filters);
 
       if (name) {
-        query.name = new RegExp(name, "i"); 
+        query.name = new RegExp(name, "i");
       }
       if (category) {
         query.category = category;
@@ -75,7 +76,6 @@ module.exports = {
         query.price = {$gte: range[0], $lte: range[1]};
       }
 
-      console.log(query)
 
       if (minStarRating) {
         let products = await Product.find(query);
@@ -94,7 +94,9 @@ module.exports = {
       }
     },
     posts: async (_, {sellerId}) => {
-      return Product.find({seller: sellerId});
+      let product = await Product.find({seller: sellerId});
+
+      return product;
     },
   },
   Mutation: {
@@ -140,6 +142,8 @@ module.exports = {
         return await category.save();
       } catch (err) {
         console.log(err);
+
+        return err;
       }
     },
     addProduct: async (
@@ -215,6 +219,36 @@ module.exports = {
         ok: true,
         message: "Pedido agregado",
       };
+    },
+    updateProduct: async (_, {id, data}) => {
+      try {
+        const body = JSON.parse(data);
+        
+        if(body.images && body.images.length) {
+          let product = await Product.findById(id);
+
+          for(let filename of product.images) {
+            await deleteFile(filename, "Products");
+
+            console.log(filename, "deleted");
+          }
+
+          await Product.updateOne({_id: id}, body);
+
+        } else {
+          await Product.updateOne({_id: id}, body);
+        }
+        
+        return {
+          ok: true,
+          message: "Producto actualizado"
+        }
+      } catch (err) {
+        return {
+          ok: false,
+          message: err
+        }
+      }
     },
     removeUser: async (_, {id}) => {
       return User.findByIdAndRemove(id);

@@ -1,4 +1,5 @@
 const util = require("util");
+const path = require("path");
 const fs = require("fs");
 const unlink = util.promisify(fs.unlink);
 
@@ -9,7 +10,9 @@ const respondWithErrorMessage = (res, err, statusCode = 500) => {
   });
 };
 
-const deleteFile = (filePath) => {
+const deleteFile = (filename, type) => {
+  const filePath = path.join(__dirname, `../uploads/${type}/${filename}`);
+
   return new Promise((resolve, reject) => {
     fs.exists(filePath, async (exist) => {
       if (exist) {

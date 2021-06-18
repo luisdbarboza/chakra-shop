@@ -107,12 +107,7 @@ module.exports = `
         ):Product
         updateProduct(
             id: ID
-            name: String
-            price: Float
-            quantity: Int
-            description: String
-            category: ID
-            images: String
+            data: String
         ):Notification
         addReview(
             authorId: ID

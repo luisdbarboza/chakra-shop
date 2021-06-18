@@ -1,17 +1,12 @@
 import {
   Grid,
-  GridItem,
   Input,
-  Center,
   Box,
   VStack,
   HStack,
   Heading,
-  Select,
-  Button
 } from "@chakra-ui/react";
 
-import Link from "next/link";
 import {useQuery} from "@apollo/client";
 import {getAllCategories} from "graphql/queries";
 import StarRatingRow from "components/StarRatingRow";
@@ -29,7 +24,7 @@ function SearchFilters({filters, setFilters}) {
     <>
       {Object.keys(filters).map((filter, index) => {
         return (
-          <Box m="0.5rem" _hover={{backgroundColor: "pink", cursor: "pointer"}}
+          <Box m="0.5rem" key={index} _hover={{backgroundColor: "pink", cursor: "pointer"}}
             onClick={() => {
               setFilters(oldFilters => {
                 const filtersCopy = {...oldFilters};
@@ -117,6 +112,7 @@ function SearchFilters({filters, setFilters}) {
             {[4, 3, 2, 1].map((stars, index) => {
               return (
                 <HStack
+                  key={index}
                   _hover={{color: "skyblue", cursor: "pointer"}}
                   onClick={() => {
                     setFilters(filters => {

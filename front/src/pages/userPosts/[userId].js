@@ -1,31 +1,25 @@
 import {useState, useEffect, useContext} from "react";
 import {AuthContext} from "context/AuthContext";
-import {getUserPosts} from "graphql/queries";
+import {getUserPosts, getAllCategories} from "graphql/queries";
 import {Table} from "@codecraftkit/core";
 import {MdDelete} from "react-icons/md";
 import {FaRegEdit, FaEye} from "react-icons/fa";
 import {Modal} from "@codecraftkit/core";
 import {useQuery, useMutation} from "@apollo/client";
-import {removeProduct} from "graphql/mutations";
+import {removeProduct, updateProduct} from "graphql/mutations";
 import Swal from "sweetalert2";
 import {isEmpty} from "helpers/helpers";
 //import {useRouter} from "next/router";
 import {
   Grid,
-  GridItem,
   Heading,
   Flex,
   Box,
-  Input,
   Button,
-  Link,
-  Textarea,
   FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Select,
   useDisclosure
 } from "@chakra-ui/react";
+import {SERVER_URL} from "constants/constants";
 
 
 import {Form, Formik} from "formik";
@@ -37,7 +31,8 @@ function userPosts() {
   const {isOpen, onOpen, onClose} = useDisclosure();
   //const router = useRouter();
   const {user} = useContext(AuthContext);
-  const {data: postsData, loading} = useQuery(getUserPosts, {
+  console.log("USERID", user.id);
+  const {data: postsData, loading: loadingPosts, error: postsError} = useQuery(getUserPosts, {
     variables: {
       sellerId: user.id,
     },
@@ -88,7 +83,7 @@ function userPosts() {
                 }
               ],
             });
-          } catch(err) {
+          } catch (err) {
             console.log(err);
           }
           onClose();
@@ -102,93 +97,189 @@ function userPosts() {
     </Flex>
   );
 
-  const EditView = () => (
-    <Formik
-      initialValues={{
-        name: selectedProduct.name,
-        price: selectedProduct.price,
-        description: selectedProduct.description,
-        quantity: selectedProduct.quantity,
-        category: selectedProduct.category,
-        images: selectedProduct.images,
-      }}
-      validate={({name, price, description, quantity, category}) => {
-        const errors = {};
+  const EditView = () => {
+    const [updateMutate, {data: updateData}] = useMutation(updateProduct);
+    const {data: categoryData, loading} = useQuery(getAllCategories);
+    const [categories, setCategories] = useState([]);
 
-        if (isEmpty(name)) errors.name = "El campo nombre es obligatorio";
-        if (isEmpty(description))
-          errors.description = "Es necesaria una descripcion del producto";
-        if (Number(price) <= 0) errors.price = "Precio invalido";
-        if (Number(quantity) <= 0) errors.quantity = "Cantidad invalida";
-        if (category === "")
-          errors.category = "Debes escoger una categoria";
 
-        return errors;
-      }}
-      onSubmit={async (
-        {name, price, description, quantity, category, images},
-        {setSubmitting, resetForm}
-      ) => {
-      }}
-    >
-      {({isSubmitting}) => (
-        <Form>
-          <Heading as="h2">Editar</Heading>
-          <FormControl mt="1rem">
-            <FormField label="Nombre" name="name" required type="text" />
-          </FormControl>
-          <FormControl mt="1rem">
-            <FormField type="number" name="price" label="Precio:" min={0} />
-          </FormControl>
-          <FormControl mt="1rem">
-            <FormField
-              type="textarea"
-              name="description"
-              label="Descripcion"
-            />
-          </FormControl>
-          <FormControl mt="1rem">
-            <FormField
-              type="number"
-              name="quantity"
-              label="Cantidad:"
-              min={0}
-            />
-          </FormControl>
-          {/*<FormControl mt="1rem">
-          <FormField
-            type="select"
-            name="category"
-            label="Categoria"
-            placeholder="Selecciona una categoria"
-            data={categories}
-          />
-        </FormControl>*/}
-          <FormControl mt="1rem">
-            <FormField
-              type="image"
-              height="200px"
-              name="images"
-              label="Imagenes referenciales"
-              placeholder="Selecciona imagenes"
-              multiple
-            //stackImages
-            />
-          </FormControl>
-          <Button
-            mt="1rem"
-            type="submit"
-            disabled={isSubmitting}
-            bg="#F0C040"
-            color="black"
-            w="100%"
-          >
-            Enviar
-          </Button>
-        </Form>
-      )}
-    </Formik>
-  );
+    useEffect(() => {
+      if (!loading && categoryData && categoryData.categories) {
+        const categoriesArray = [];
+
+        categoryData.categories.forEach((category) => {
+          categoriesArray.push({label: category.name, value: category.id});
+        });
+
+        setCategories(categoriesArray);
+      }
+    }, [categoryData]);
+
+    useEffect(async () => {
+      if (updateData && updateData.updateProduct) {
+        await Swal.fire({
+          icon: "success",
+          text: "Producto actualizado!!!",
+        });
+      }
+    }, [updateData]);
+
+    return (
+      <Formik
+        initialValues={{
+          name: selectedProduct.name,
+          price: selectedProduct.price,
+          description: selectedProduct.description,
+          quantity: selectedProduct.quantity,
+          category: selectedProduct.category,
+          images: [],
+        }}
+        validate={({name, price, description, quantity, category}) => {
+          const errors = {};
+
+          if (isEmpty(name)) errors.name = "El campo nombre es obligatorio";
+          if (isEmpty(description))
+            errors.description = "Es necesaria una descripcion del producto";
+          if (Number(price) <= 0) errors.price = "Precio invalido";
+          if (Number(quantity) <= 0) errors.quantity = "Cantidad invalida";
+          if (category === "")
+            errors.category = "Debes escoger una categoria";
+
+          return errors;
+        }}
+        onSubmit={async (
+          {name, price, description, quantity, category, images},
+          {setSubmitting, resetForm}
+        ) => {
+          setSubmitting(true);
+          const errors = [];
+
+          if (isEmpty(name) || isEmpty(description)) {
+            errors.push("Campos vacios");
+          }
+
+          if (Number(price) <= 0) {
+            errors.push("Precio invalido");
+          }
+
+          if (Number(quantity) <= 0) {
+            errors.push("cantidad invalida");
+          }
+
+          if (errors.length > 0) {
+            await Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text:
+                "Se encontraron los siguientes errores: " + errors.toString(),
+            });
+          } else {
+            // console.log(filesRef.current.files);
+            const formData = new FormData();
+
+            console.log(images);
+            
+            if(images.length > 0) {
+              for (let file of images) {
+                formData.append("images", file);
+              }
+            }
+
+            const response = await fetch(
+              `${SERVER_URL}/images/upload/products`,
+              {
+                method: "POST",
+                body: formData,
+              }
+            );
+
+            const responseData = await response.json();
+
+            let imagesUploaded = [];
+
+            if (responseData.ok) {
+              responseData.data.forEach((image) => {
+                imagesUploaded.push(image.filename);
+              });
+            }
+
+            const data = JSON.stringify({name, price, description, category, images: imagesUploaded});
+
+            updateMutate({
+              variables: {
+                id: selectedProduct._id,
+                data
+              },
+              refetchQueries: [
+                {query: getUserPosts, variables: {sellerId: user.id}}
+              ]
+            });
+
+            resetForm();
+          }
+
+          setSubmitting(false);
+        }}
+      >
+        {({isSubmitting}) => (
+          <Form>
+            <Heading as="h2">Editar</Heading>
+            <FormControl mt="1rem">
+              <FormField label="Nombre" name="name" required type="text" />
+            </FormControl>
+            <FormControl mt="1rem">
+              <FormField type="number" name="price" label="Precio:" min={0} />
+            </FormControl>
+            <FormControl mt="1rem">
+              <FormField
+                type="textarea"
+                name="description"
+                label="Descripcion"
+              />
+            </FormControl>
+            <FormControl mt="1rem">
+              <FormField
+                type="number"
+                name="quantity"
+                label="Cantidad:"
+                min={0}
+              />
+            </FormControl>
+            <FormControl mt="1rem">
+              <FormField
+                type="select"
+                name="category"
+                label="Categoria"
+                placeholder="Selecciona una categoria"
+                data={categories}
+              />
+            </FormControl>
+            <FormControl mt="1rem">
+              <FormField
+                type="image"
+                height="200px"
+                name="images"
+                label="Imagenes referenciales"
+                placeholder="Selecciona imagenes"
+                multiple
+              //stackImages
+              />
+            </FormControl>
+            <Button
+              mt="1rem"
+              type="submit"
+              disabled={isSubmitting}
+              bg="#F0C040"
+              color="black"
+              w="100%"
+            >
+              Enviar
+            </Button>
+          </Form>
+        )}
+      </Formik>
+    )
+  };
 
   //verifica si los datos de una eliminacion son correctos
   useEffect(async () => {
@@ -201,8 +292,10 @@ function userPosts() {
   }, [removeData]);
 
   useEffect(() => {
+    console.log(postsData, loadingPosts, postsError, getUserPosts);
+
     const newList = [];
-    if (!loading && list.length === 0) {
+    if (!loadingPosts && list.length === 0 && postsData) {
       postsData.posts.forEach((post) => {
         newList.push({
           _id: post.id,
@@ -215,7 +308,7 @@ function userPosts() {
 
       setList(newList);
     }
-  }, [loading]);
+  }, [loadingPosts]);
 
   return list.length > 0 ? (
     <Box p="2rem" w="100%" h="100%">
@@ -240,7 +333,7 @@ function userPosts() {
         onClose={onClose}
       />
     </Box>
-  ) : loading ? (
+  ) : loadingPosts ? (
     <div>loading...</div>
   ) : (
     list.length === 0 && <div>Sin productos publicados</div>

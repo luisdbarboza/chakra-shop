@@ -1,44 +1,36 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import {useState, useEffect, useContext} from "react";
 import {
-  Grid,
-  GridItem,
   Heading,
   Flex,
   Box,
-  Input,
   Button,
-  Link,
-  Textarea,
   FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Select,
 } from "@chakra-ui/react";
 
 import Swal from "sweetalert2";
-import { AuthContext } from "context/AuthContext";
-import { client, SERVER_URL } from "constants/constants";
-import { useQuery, useMutation } from "@apollo/client";
-import { addProductMutation } from "graphql/mutations";
-import { getAllCategories, getAllProducts } from "graphql/queries";
+import {AuthContext} from "context/AuthContext";
+import {client, SERVER_URL} from "constants/constants";
+import {useQuery, useMutation} from "@apollo/client";
+import {addProductMutation} from "graphql/mutations";
+import {getAllCategories, getAllProducts} from "graphql/queries";
 
-import { isEmpty } from "helpers/helpers";
+import {isEmpty} from "helpers/helpers";
 
-import { Form, Formik } from "formik";
-import { FormField } from "@codecraftkit/formfield";
+import {Form, Formik} from "formik";
+import {FormField} from "@codecraftkit/formfield";
 
 const AddProductForm = () => {
   const [categories, setCategories] = useState([]);
-  const { data: categoryData, loading } = useQuery(getAllCategories);
-  const [mutate, { data }] = useMutation(addProductMutation);
-  const { user, dispatchUser } = useContext(AuthContext);
+  const {data: categoryData, loading} = useQuery(getAllCategories);
+  const [mutate, {data}] = useMutation(addProductMutation);
+  const {user, dispatchUser} = useContext(AuthContext);
 
   useEffect(() => {
     if (!loading && categoryData && categoryData.categories) {
       const categoriesArray = [];
 
       categoryData.categories.forEach((category) => {
-        categoriesArray.push({ label: category.name, value: category.id });
+        categoriesArray.push({label: category.name, value: category.id});
       });
 
       setCategories(categoriesArray);
@@ -66,7 +58,7 @@ const AddProductForm = () => {
             category: "",
             images: [],
           }}
-          validate={({ name, price, description, quantity, category }) => {
+          validate={({name, price, description, quantity, category}) => {
             const errors = {};
 
             if (isEmpty(name)) errors.name = "El campo nombre es obligatorio";
@@ -80,8 +72,8 @@ const AddProductForm = () => {
             return errors;
           }}
           onSubmit={async (
-            { name, price, description, quantity, category, images },
-            { setSubmitting, resetForm }
+            {name, price, description, quantity, category, images},
+            {setSubmitting, resetForm}
           ) => {
             setSubmitting(true);
             const errors = [];
@@ -158,7 +150,7 @@ const AddProductForm = () => {
             setSubmitting(false);
           }}
         >
-          {({ isSubmitting }) => (
+          {({isSubmitting}) => (
             <Form>
               <Heading as="h2">Registra un producto</Heading>
               <FormControl mt="1rem">
@@ -199,7 +191,7 @@ const AddProductForm = () => {
                   label="Imagenes referenciales"
                   placeholder="Selecciona imagenes"
                   multiple
-                  //stackImages
+                //stackImages
                 />
               </FormControl>
               <Button
