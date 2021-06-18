@@ -27,16 +27,16 @@ import {FormField} from "@codecraftkit/formfield";
 
 
 function userPosts() {
-  const [removeMutate, {data: removeData}] = useMutation(removeProduct);
   const {isOpen, onOpen, onClose} = useDisclosure();
   //const router = useRouter();
   const {user} = useContext(AuthContext);
-  console.log("USERID", user.id);
   const {data: postsData, loading: loadingPosts, error: postsError} = useQuery(getUserPosts, {
     variables: {
       sellerId: user.id,
     },
   });
+  const [refresh, setRefresh] = useState(false);
+
   const [list, setList] = useState([]);
   const head = ["name", "price", "description", "quantity"];
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -64,38 +64,54 @@ function userPosts() {
     },
   ];
 
-  const DeleteView = () => (
-    <Flex p="1rem" justify="center" align="center">
-      <Button
-        bg="red"
-        color="white"
-        mr="1rem"
-        onClick={() => {
-          try {
-            removeMutate({
-              variables: {
-                id: selectedProduct._id,
-              },
-              refetchQueries: [
-                {
-                  query: getUserPosts,
-                  variables: {sellerId: user.id}
-                }
-              ],
-            });
-          } catch (err) {
-            console.log(err);
-          }
-          onClose();
-        }}
-      >
-        Borrar
-      </Button>
-      <Button bg="skyblue" color="white" onClick={onClose}>
-        Cancelar
-      </Button>
-    </Flex>
-  );
+  const DeleteView = () => {
+    const [removeMutate, {data: removeData, error}] = useMutation(removeProduct);
+    
+    return (
+      <Flex p="1rem" justify="center" align="center">
+        <Button
+          bg="red"
+          color="white"
+          mr="1rem"
+          onClick={() => {
+            console.log(user.id, getUserPosts);
+
+              removeMutate({
+                variables: {
+                  id: selectedProduct._id,
+                },
+                refetchQueries: [
+                  {
+                    query: getUserPosts,
+                    variables: {sellerId: user.id}
+                  }
+                ],
+              })
+              .then(() => {
+                Swal.fire({
+                  icon: "success",
+                  text: "Producto borrado!!!",
+                });
+                onClose();
+                setRefresh(true);
+              })
+              .catch(err => {
+                console.log(error);
+                Swal.fire({
+                  icon: "error",
+                  text: err,
+                });
+              })
+          }}
+        >
+          Borrar
+        </Button>
+        <Button bg="skyblue" color="white" onClick={onClose}>
+          Cancelar
+        </Button>
+      </Flex>
+    )
+  }
 
   const EditView = () => {
     const [updateMutate, {data: updateData}] = useMutation(updateProduct);
@@ -174,11 +190,8 @@ function userPosts() {
                 "Se encontraron los siguientes errores: " + errors.toString(),
             });
           } else {
-            // console.log(filesRef.current.files);
             const formData = new FormData();
 
-            console.log(images);
-            
             if(images.length > 0) {
               for (let file of images) {
                 formData.append("images", file);
@@ -215,6 +228,7 @@ function userPosts() {
               ]
             });
 
+            setRefresh(true);
             resetForm();
           }
 
@@ -281,21 +295,10 @@ function userPosts() {
     )
   };
 
-  //verifica si los datos de una eliminacion son correctos
-  useEffect(async () => {
-    if (removeData && removeData.removeProduct && removeData.removeProduct.id) {
-      await Swal.fire({
-        icon: "success",
-        text: "Producto borrado!!!",
-      });
-    }
-  }, [removeData]);
 
   useEffect(() => {
-    console.log(postsData, loadingPosts, postsError, getUserPosts);
-
     const newList = [];
-    if (!loadingPosts && list.length === 0 && postsData) {
+    if (!loadingPosts && postsData || refresh) {
       postsData.posts.forEach((post) => {
         newList.push({
           _id: post.id,
@@ -307,8 +310,9 @@ function userPosts() {
       });
 
       setList(newList);
+      setRefresh(false);
     }
-  }, [loadingPosts]);
+  }, [loadingPosts, refresh]);
 
   return list.length > 0 ? (
     <Box p="2rem" w="100%" h="100%">

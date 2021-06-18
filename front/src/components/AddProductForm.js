@@ -140,7 +140,7 @@ const AddProductForm = () => {
                 refetchQueries: [
                   {
                     query: getAllProducts,
-                  },
+                  }
                 ],
               });
 

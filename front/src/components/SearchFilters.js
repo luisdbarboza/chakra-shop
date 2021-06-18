@@ -23,6 +23,23 @@ function SearchFilters({filters, setFilters}) {
   return (
     <>
       {Object.keys(filters).map((filter, index) => {
+        let filterStr;
+        switch(filter) {
+          case "name": 
+            filterStr = "Nombre";
+            break;
+          case "category":
+            filterStr = "Categoria";
+            break;
+          case "range": 
+            filterStr = "Rango";
+            break;
+          case "minStarRating":
+            filterStr = "Calificacion";
+            break;
+          default:
+        }
+
         return (
           <Box m="0.5rem" key={index} _hover={{backgroundColor: "pink", cursor: "pointer"}}
             onClick={() => {
@@ -34,13 +51,13 @@ function SearchFilters({filters, setFilters}) {
               })
             }}
           >
-            {filter} : {filters[filter]}
+            {filterStr} : {filters[filter]}
           </Box>
         )
       })}
-      <Grid templateRows="repeat(3, 150px)" gap={1}>
+      <Grid templateRows="repeat(3, auto)" gap={1}>
         <Box>
-          <Heading as="h3" size="1.2rem">
+          <Heading as="h3" size="1.2rem" mt="1rem">
             Nombre del producto
           </Heading>
           <Input placeholder="Nombre del producto..."
@@ -55,10 +72,9 @@ function SearchFilters({filters, setFilters}) {
           />
         </Box>
         <Box>
-          <Heading as="h3" size="1.2rem">
+          <Heading as="h3" size="1.2rem" mt="1rem">
             Categoria
           </Heading>
-          <VStack align="left" color="blue">
             {!loadingCategories && categoriesData && (
               <>
                 {categoriesData.categories.map((category, index) => {
@@ -79,13 +95,11 @@ function SearchFilters({filters, setFilters}) {
                 })}
               </>
             )}
-          </VStack>
         </Box>
         <Box>
-          <Heading as="h3" size="1.2rem">
+          <Heading as="h3" size="1.2rem" mt="1rem">
             Precio
           </Heading>
-          <VStack align="left" color="blue">
             {priceRanges.map((range, index) => {
               return (
                 <Box color="blue" _hover={{cursor: "pointer", color: "skyblue"}} key={index}
@@ -102,13 +116,11 @@ function SearchFilters({filters, setFilters}) {
                 </Box>
               );
             })}
-          </VStack>
         </Box>
         <Box>
-          <Heading as="h3" size="1.2rem">
+          <Heading as="h3" size="1.2rem" mt="1rem">
             Opinión media de los clientes
           </Heading>
-          <VStack align="left">
             {[4, 3, 2, 1].map((stars, index) => {
               return (
                 <HStack
@@ -128,7 +140,6 @@ function SearchFilters({filters, setFilters}) {
                 </HStack>
               )
             })}
-          </VStack>
         </Box>
       </Grid>
     </>

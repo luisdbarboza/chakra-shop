@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   Box,
   Grid,
@@ -19,13 +19,13 @@ import { addUserReview } from "graphql/mutations";
 
 import Link from "next/link";
 
-function ReviewForm({ product }) {
+const ReviewForm = React.memo(({ product }) => {
   const { user } = useContext(AuthContext);
   const [{ reviewTextarea, selectRating }, setFormFields] = useForm({
     reviewTextarea: "",
     selectRating: "1",
   });
-  const [mutate, mutationData] = useMutation(addUserReview);
+  const [addReview, {data, loading, error}] = useMutation(addUserReview);
 
   const handleSubmit = async (e) => {
     const errors = [];
@@ -47,37 +47,34 @@ function ReviewForm({ product }) {
         text: "Se encontraron los siguientes errores: " + errors.toString(),
       });
     } else {
-      mutate({
-        variables: {
-          authorId: user.id,
-          productId: product.id,
-          rating: Number(selectRating),
-          text: reviewTextarea,
-        },
-        refetchQueries: [
-          {
-            query: getSingleProductInfo,
-            variables: {
-              id: product.id,
-            },
+        addReview({
+          variables: {
+            authorId: user.id,
+            productId: product.id,
+            rating: Number(selectRating),
+            text: reviewTextarea,
           },
-        ],
-      });
+          refetchQueries: [
+            {
+              query: getSingleProductInfo,
+              variables: {
+                id: product.id,
+              },
+            },
+          ],
+        }).then(() => {
+          Swal.fire({
+            icon: "success",
+            text: "Review publicada",
+          });
+        }).catch(error => {
+          Swal.fire({
+            icon: "error",
+            text: error
+          })
+        })
     }
   };
-
-  useEffect(async () => {
-    if (
-      !mutationData.loading &&
-      mutationData.data &&
-      mutationData.data.addReview.ok
-    ) {
-      await Swal.fire({
-        icon: "success",
-        text: mutationData.data.addReview.message,
-      });
-    }
-  }, [mutationData]);
 
   return (
     <Box p="1rem" pl="0rem" w={{ base: "90%", md: "40%" }} m="auto">
@@ -128,6 +125,6 @@ function ReviewForm({ product }) {
       )}
     </Box>
   );
-}
+})
 
 export default ReviewForm;

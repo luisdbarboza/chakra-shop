@@ -28,7 +28,7 @@ function Product({id}) {
         <Head>
           <title>{data.product.name} - ChakraShop</title>
         </Head>
-        <Grid templateColumns={{base: "100%", md: "2fr 1fr 1fr"}} mt="1rem">
+        <Grid templateColumns={{base: "100%", md: "0.5fr 3fr 1.5fr"}} gap={2} mt="1rem">
           <ProductDetails product={data.product} />
           <ReviewsSection product={data.product} />
         </Grid>

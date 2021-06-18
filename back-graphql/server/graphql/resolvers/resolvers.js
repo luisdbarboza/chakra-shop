@@ -168,18 +168,31 @@ module.exports = {
       return product.save();
     },
     addReview: async (_, {authorId, productId, rating, text}) => {
-      let review = {
-        author: authorId,
-        rating: rating,
-        text: text,
-      };
+      try {
+        let review = {
+          author: authorId,
+          rating: rating,
+          text: text,
+        };
 
-      await Product.update({_id: productId}, {$push: {reviews: review}});
+        let product = await Product.findById(productId);
 
-      return {
-        ok: true,
-        message: "Review agregada",
-      };
+        product.reviews.forEach(review => {
+          if(review.author = authorId) throw new Error("Ya hiciste una review de este producto");
+        });
+
+        await Product.update({_id: productId}, {$push: {reviews: review}});
+
+        return {
+          ok: true,
+          message: "Review agregada",
+        };
+      } catch(err) {
+        return {
+          ok: false,
+          message: err
+        }
+      }
     },
     addItemToCart: async (_, {userId, productId, quantity}) => {
       let cartItem = {

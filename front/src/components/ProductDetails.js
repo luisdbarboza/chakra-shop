@@ -101,7 +101,42 @@ function ProductDetails({ product }) {
   return (
     <>
       <GridItem
-        colSpan={1}
+        gridColumn={{base: "initial", md: "1/2"}}
+        gridRow={{base: "2/3", md: "initial"}}
+      >
+        <Grid
+          templateRows={{base: "initial", md: "repeat(5, 100px)"}}
+          templateColumns={{base: "repeat(5, 1fr)", md: "initial"}}
+        >
+        {product.images.map((image, index) => {
+            const imgPath = `${SERVER_URL}/images/products/${image}`;
+
+            return (
+                <Flex
+                  p="0.5rem"
+                  align="center"
+                  justify="center"
+                  borderRadius="5px"
+                  borderWidth="2px"
+                  style={{ display: "flex" }}
+                  _hover={{ cursor: "pointer", borderWidth: "4px" }}
+                  key={index}
+                >
+                  <Image
+                    src={imgPath}
+                    h="100%"
+                    m="auto"
+                    alt={product.name + " " + index + 1}
+                    onClick={() => setSelectedImage(index)}
+                  />
+                </Flex>
+            );
+          })}
+        </Grid>
+      </GridItem>
+      <GridItem
+        gridColumn={{base: "initial", md: "2/3"}}
+        gridRow={{base: "1/2", md: "initial"}}
         p="1rem"
         borderWidth="1px"
         borderRadius="5px"
@@ -119,86 +154,68 @@ function ProductDetails({ product }) {
           />
         </Flex>
       </GridItem>
-      <GridItem colSpan={1} p="1rem">
-        <Heading fontSize="2rem" as="h3" mt="1rem">
-          {product.name}
-        </Heading>
-        <HStack>
-          <StarRatingRow
-            numberOfStars={5}
-            checked={Math.floor(product.averageRating)}
-          />
-          <span>{product.reviewsCount} resenas</span>
-        </HStack>
-        <Box>Precio: ${product.price}</Box>
-        <Box>Descripcion: {product.description}</Box>
-        <Grid templateColumns="30% 30% 30%" gap={1}>
-          <GridItem colSpan={3}>Imagenes: </GridItem>
-          {product.images.map((image, index) => {
-            const imgPath = `${SERVER_URL}/images/products/${image}`;
-
-            return (
-              <Box
-                borderRadius="5px"
-                borderWidth="2px"
-                w="100%"
-                h="100%"
-                style={{ display: "flex" }}
-                _hover={{ cursor: "pointer", borderWidth: "4px" }}
-                key={index}
-              >
-                <Image
-                  src={imgPath}
-                  m="auto"
-                  alt={product.name + " " + index + 1}
-                  onClick={() => setSelectedImage(index)}
-                />
-              </Box>
-            );
-          })}
+      <GridItem 
+        gridColumn={{base: "initial", md: "3/4"}}
+        gridRow={{base: "3/4", md: "initial"}} 
+      >
+        <Grid h="100%" alignContent="space-between">
+          <GridItem>
+            <Heading fontSize="3rem" as="h3" mt="1rem">
+              {product.name}
+            </Heading>
+            <HStack>
+              <StarRatingRow
+                numberOfStars={5}
+                checked={Math.floor(product.averageRating)}
+              />
+              <span>{product.reviewsCount} resenas</span>
+            </HStack>
+            <Box>Precio: ${product.price}</Box>
+            <Box>Descripcion: {product.description}</Box>
+          </GridItem>
+          <GridItem>
+            <Box bg="#F8F8F8" p="1rem" borderRadius="5px" borderWidth="2px">
+              <Grid templateColumns="50% 50%" gap={1}>
+                <GridItem colSpan={2}>Vendedor:</GridItem>
+                <GridItem colSpan={2}>
+                  <Link href={`/profiles/${product.seller.id}`}>
+                    <a>{product.seller.name}</a>
+                  </Link>
+                </GridItem>
+                <GridItem>Estado</GridItem>
+                <GridItem>
+                  {product.quantity > 0 ? "Disponible" : "Sin Stock"}
+                </GridItem>
+                <GridItem>Cantidad</GridItem>
+                <GridItem>
+                  {user.loggedIn &&
+                  user.id !== product.seller.id &&
+                  !isOnCartAlready &&
+                  product.quantity > 0 ? (
+                    <SelectAndOptions />
+                  ) : (
+                    <>{product.quantity}</>
+                  )}
+                </GridItem>
+                <GridItem colSpan={2}>
+                  {user.loggedIn &&
+                    user.id !== product.seller.id &&
+                    !isOnCartAlready &&
+                    product.quantity > 0 && (
+                      <Button
+                        bg="#F0C040"
+                        color="black"
+                        w="100%"
+                        onClick={handleCartUpdate}
+                      >
+                        Agregar al carrito
+                      </Button>
+                    )}
+                </GridItem>
+              </Grid>
+            </Box>
+          </GridItem>
         </Grid>
-      </GridItem>
-      <GridItem colSpan={1}>
-        <Box bg="#F8F8F8" p="1rem" borderRadius="5px" borderWidth="2px">
-          <Grid templateColumns="50% 50%" gap={1}>
-            <GridItem colSpan={2}>Vendedor:</GridItem>
-            <GridItem colSpan={2}>
-              <Link href={`/profiles/${product.seller.id}`}>
-                <a>{product.seller.name}</a>
-              </Link>
-            </GridItem>
-            <GridItem>Estado</GridItem>
-            <GridItem>
-              {product.quantity > 0 ? "Disponible" : "Sin Stock"}
-            </GridItem>
-            <GridItem>Cantidad</GridItem>
-            <GridItem>
-              {user.loggedIn &&
-              user.id !== product.seller.id &&
-              !isOnCartAlready &&
-              product.quantity > 0 ? (
-                <SelectAndOptions />
-              ) : (
-                <>{product.quantity}</>
-              )}
-            </GridItem>
-            <GridItem colSpan={2}>
-              {user.loggedIn &&
-                user.id !== product.seller.id &&
-                !isOnCartAlready &&
-                product.quantity > 0 && (
-                  <Button
-                    bg="#F0C040"
-                    color="black"
-                    w="100%"
-                    onClick={handleCartUpdate}
-                  >
-                    Agregar al carrito
-                  </Button>
-                )}
-            </GridItem>
-          </Grid>
-        </Box>
       </GridItem>
     </>
   );
